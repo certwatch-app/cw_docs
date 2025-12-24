@@ -83,11 +83,6 @@
           "anchor": "App",
           "href": "https://certwatch.app",
           "icon": "shield-check"
-        },
-        {
-          "anchor": "GitHub",
-          "href": "https://github.com/certwatch",
-          "icon": "github"
         }
       ]
     }
@@ -119,8 +114,7 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/certwatchapp",
-      "github": "https://github.com/certwatch"
+      "x": "https://x.com/certwatchapp"
     }
   }
 }
