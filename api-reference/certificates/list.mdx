@@ -1,0 +1,111 @@
+---
+title: 'List Certificates'
+description: 'Get all certificates in your organization'
+api: 'GET /certificates'
+---
+
+## Request
+
+```bash
+curl https://api.certwatch.app/v1/certificates \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter by status: `valid`, `expiring`, `expired`, `error` |
+| `limit` | integer | Number of results (default: 50, max: 100) |
+| `offset` | integer | Pagination offset |
+
+### Example with Filters
+
+```bash
+curl "https://api.certwatch.app/v1/certificates?status=expiring&limit=10" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Response
+
+```json
+{
+  "data": [
+    {
+      "id": "cert_abc123",
+      "domain": "example.com",
+      "name": "Main Website",
+      "status": "valid",
+      "daysUntilExpiry": 45,
+      "expiresAt": "2025-02-15T15:00:00Z",
+      "issuedAt": "2024-02-15T15:00:00Z",
+      "issuer": "Let's Encrypt",
+      "subject": "example.com",
+      "alertThresholds": [30, 14, 7, 3, 1],
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-08T12:00:00Z"
+    },
+    {
+      "id": "cert_def456",
+      "domain": "api.example.com",
+      "name": "API Server",
+      "status": "expiring",
+      "daysUntilExpiry": 7,
+      "expiresAt": "2025-01-15T10:00:00Z",
+      "issuedAt": "2024-01-15T10:00:00Z",
+      "issuer": "DigiCert",
+      "subject": "api.example.com",
+      "alertThresholds": [30, 14, 7, 3, 1],
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-08T12:00:00Z"
+    }
+  ],
+  "meta": {
+    "total": 15,
+    "limit": 50,
+    "offset": 0,
+    "requestId": "req_xyz789"
+  }
+}
+```
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique certificate identifier |
+| `domain` | string | Domain being monitored |
+| `name` | string | Optional friendly name |
+| `status` | string | Current status |
+| `daysUntilExpiry` | integer | Days until certificate expires |
+| `expiresAt` | string | Expiration date (ISO 8601) |
+| `issuedAt` | string | Issue date (ISO 8601) |
+| `issuer` | string | Certificate Authority |
+| `subject` | string | Certificate subject |
+| `alertThresholds` | array | Configured alert days |
+| `createdAt` | string | When added to CertWatch |
+| `updatedAt` | string | Last update time |
+
+## Errors
+
+### 401 Unauthorized
+
+```json
+{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid"
+  }
+}
+```
+
+### 429 Rate Limited
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Too many requests. Please retry after 30 seconds."
+  }
+}
+```

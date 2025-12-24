@@ -1,0 +1,85 @@
+---
+title: "Adding Certificates"
+description: "How to add certificates to CertWatch"
+---
+
+## Adding a Single Certificate
+
+<Steps>
+  <Step title="Navigate to Certificates">
+    Click **Certificates** in the sidebar to open the certificates page.
+  </Step>
+  <Step title="Click Add Certificate">
+    Click the **Add Certificate** button in the top right corner.
+  </Step>
+  <Step title="Enter Domain">
+    Enter the domain you want to monitor. Examples:
+    - `example.com`
+    - `api.example.com`
+    - `*.example.com` (wildcard certificates)
+  </Step>
+  <Step title="Configure Options">
+    - **Name** (optional) - A friendly name for the certificate
+    - **Port** - Default is 443, change if your certificate is on a different port
+    - **Alert Thresholds** - Select when to receive notifications
+  </Step>
+  <Step title="Save">
+    Click **Add Certificate** to start monitoring.
+  </Step>
+</Steps>
+
+## Domain Format
+
+Enter domains in one of these formats:
+
+| Format | Example | Description |
+|--------|---------|-------------|
+| Domain only | `example.com` | Monitors on default port 443 |
+| Subdomain | `api.example.com` | Monitors specific subdomain |
+| With port | `example.com:8443` | Monitors on custom port |
+
+<Warning>
+  CertWatch must be able to reach the domain over the internet. Internal or private domains are not currently supported.
+</Warning>
+
+## Alert Thresholds
+
+Configure when to receive notifications before expiry:
+
+- **30 days** - Early warning for planning
+- **14 days** - Two weeks to renew
+- **7 days** - One week warning
+- **3 days** - Urgent reminder
+- **1 day** - Final warning
+
+<Tip>
+  We recommend enabling at least 30, 7, and 1 day alerts to ensure you never miss an expiring certificate.
+</Tip>
+
+## After Adding
+
+Once added, CertWatch will:
+
+1. **Immediately fetch** the certificate information
+2. **Calculate days until expiry** and set status
+3. **Schedule regular checks** (every 6 hours)
+4. **Send notifications** based on your alert thresholds
+
+## Troubleshooting
+
+### Certificate Not Found
+
+If you see an error after adding a domain:
+
+- Verify the domain is publicly accessible
+- Check that SSL is properly configured on the server
+- Ensure no firewall is blocking port 443 (or your custom port)
+- Try accessing `https://yourdomain.com` in a browser first
+
+### Wrong Certificate Detected
+
+If the wrong certificate is detected:
+
+- The domain may be behind a CDN or proxy
+- Check if the certificate matches what you see in your browser
+- Try adding the origin server domain directly

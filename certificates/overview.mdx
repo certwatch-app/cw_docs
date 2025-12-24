@@ -1,0 +1,71 @@
+---
+title: "Certificates Overview"
+description: "Understanding certificate monitoring in CertWatch"
+---
+
+CertWatch monitors SSL/TLS certificates for your domains, keeping track of expiration dates, certificate chain validity, and issuer information.
+
+## Certificate Dashboard
+
+The Certificates page shows all your monitored certificates with key information at a glance:
+
+| Column | Description |
+|--------|-------------|
+| Domain | The domain being monitored |
+| Status | Current certificate status (Valid, Expiring Soon, Expired, Error) |
+| Days Left | Number of days until certificate expires |
+| Issuer | Certificate Authority that issued the certificate |
+| Added | When the certificate was added to monitoring |
+
+## Certificate Status
+
+Certificates can have the following statuses:
+
+<CardGroup cols={2}>
+  <Card title="Valid" icon="check-circle">
+    Certificate is valid and not expiring within your alert thresholds.
+  </Card>
+  <Card title="Expiring Soon" icon="clock">
+    Certificate is within one of your configured alert thresholds.
+  </Card>
+  <Card title="Expired" icon="circle-xmark">
+    Certificate has already expired.
+  </Card>
+  <Card title="Error" icon="triangle-exclamation">
+    Unable to fetch certificate information from the domain.
+  </Card>
+</CardGroup>
+
+## What CertWatch Monitors
+
+For each certificate, CertWatch tracks:
+
+- **Expiration Date** - When the certificate expires
+- **Valid From** - When the certificate was issued
+- **Subject** - The domain(s) covered by the certificate
+- **Issuer** - The Certificate Authority
+- **Serial Number** - Unique certificate identifier
+- **Signature Algorithm** - The cryptographic algorithm used
+
+## Monitoring Frequency
+
+CertWatch checks your certificates regularly:
+
+- **Every 6 hours** for all certificates
+- **Immediate check** when you add a new certificate
+- **On-demand** via the refresh button
+
+## Certificate Limits
+
+Your certificate limit depends on your plan:
+
+| Plan | Certificate Limit |
+|------|------------------|
+| Free | 3 certificates |
+| Pro | 50 certificates |
+| Team | 200 certificates |
+| Enterprise | Unlimited |
+
+<Note>
+  Need more certificates? [Upgrade your plan](https://certwatch.app/settings/billing) at any time.
+</Note>

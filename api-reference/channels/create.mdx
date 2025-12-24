@@ -1,0 +1,151 @@
+---
+title: 'Create Channel'
+description: 'Add a new notification channel'
+api: 'POST /channels'
+---
+
+## Request
+
+```bash
+curl -X POST https://api.certwatch.app/v1/channels \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "email",
+    "name": "Ops Team",
+    "config": {
+      "email": "ops@example.com"
+    }
+  }'
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | Yes | Channel type: `email`, `discord`, `webhook` |
+| `name` | string | Yes | Display name |
+| `config` | object | Yes | Type-specific configuration |
+
+## Channel Types
+
+### Email
+
+```json
+{
+  "type": "email",
+  "name": "Team Alerts",
+  "config": {
+    "email": "alerts@example.com"
+  }
+}
+```
+
+### Discord
+
+```json
+{
+  "type": "discord",
+  "name": "Discord Alerts",
+  "config": {
+    "webhookUrl": "https://discord.com/api/webhooks/..."
+  }
+}
+```
+
+### Webhook
+
+```json
+{
+  "type": "webhook",
+  "name": "Custom Integration",
+  "config": {
+    "url": "https://your-endpoint.com/webhook",
+    "headers": {
+      "Authorization": "Bearer secret"
+    }
+  }
+}
+```
+
+<Note>
+  Slack channels must be created through the OAuth flow in the CertWatch dashboard.
+</Note>
+
+## Response
+
+```json
+{
+  "data": {
+    "id": "ch_abc123",
+    "type": "email",
+    "name": "Ops Team",
+    "enabled": true,
+    "config": {
+      "email": "ops@example.com"
+    },
+    "createdAt": "2025-01-08T12:00:00Z",
+    "updatedAt": "2025-01-08T12:00:00Z"
+  },
+  "meta": {
+    "requestId": "req_xyz789"
+  }
+}
+```
+
+## Errors
+
+### 400 Bad Request - Invalid Type
+
+```json
+{
+  "error": {
+    "code": "invalid_channel_type",
+    "message": "Invalid channel type. Must be one of: email, discord, webhook"
+  }
+}
+```
+
+### 400 Bad Request - Invalid Config
+
+```json
+{
+  "error": {
+    "code": "invalid_config",
+    "message": "Email address is required for email channels"
+  }
+}
+```
+
+### 400 Bad Request - Invalid Webhook URL
+
+```json
+{
+  "error": {
+    "code": "invalid_webhook_url",
+    "message": "The webhook URL is not valid"
+  }
+}
+```
+
+### 402 Payment Required - Limit Reached
+
+```json
+{
+  "error": {
+    "code": "channel_limit_reached",
+    "message": "You have reached your channel limit. Upgrade your plan to add more."
+  }
+}
+```
+
+### 401 Unauthorized
+
+```json
+{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid"
+  }
+}
+```

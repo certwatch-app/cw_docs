@@ -1,0 +1,137 @@
+---
+title: 'List Channels'
+description: 'Get all notification channels'
+api: 'GET /channels'
+---
+
+## Request
+
+```bash
+curl https://api.certwatch.app/v1/channels \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | string | Filter by type: `email`, `slack`, `discord`, `webhook` |
+| `enabled` | boolean | Filter by enabled status |
+
+## Response
+
+```json
+{
+  "data": [
+    {
+      "id": "ch_email123",
+      "type": "email",
+      "name": "Team Email",
+      "enabled": true,
+      "config": {
+        "email": "team@example.com"
+      },
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-08T12:00:00Z"
+    },
+    {
+      "id": "ch_slack456",
+      "type": "slack",
+      "name": "Engineering Slack",
+      "enabled": true,
+      "config": {
+        "channel": "#engineering-alerts",
+        "workspaceName": "Acme Inc"
+      },
+      "createdAt": "2024-01-02T00:00:00Z",
+      "updatedAt": "2024-01-08T12:00:00Z"
+    },
+    {
+      "id": "ch_discord789",
+      "type": "discord",
+      "name": "Discord Alerts",
+      "enabled": true,
+      "config": {
+        "webhookConfigured": true
+      },
+      "createdAt": "2024-01-03T00:00:00Z",
+      "updatedAt": "2024-01-08T12:00:00Z"
+    },
+    {
+      "id": "ch_webhook000",
+      "type": "webhook",
+      "name": "PagerDuty",
+      "enabled": false,
+      "config": {
+        "url": "https://events.pagerduty.com/..."
+      },
+      "createdAt": "2024-01-04T00:00:00Z",
+      "updatedAt": "2024-01-08T12:00:00Z"
+    }
+  ],
+  "meta": {
+    "total": 4,
+    "requestId": "req_xyz789"
+  }
+}
+```
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique channel identifier |
+| `type` | string | Channel type |
+| `name` | string | Display name |
+| `enabled` | boolean | Whether channel receives notifications |
+| `config` | object | Channel-specific configuration |
+| `createdAt` | string | When channel was created |
+| `updatedAt` | string | Last update time |
+
+## Config by Type
+
+### Email
+
+```json
+{
+  "email": "alerts@example.com"
+}
+```
+
+### Slack
+
+```json
+{
+  "channel": "#channel-name",
+  "workspaceName": "Workspace Name"
+}
+```
+
+### Discord
+
+```json
+{
+  "webhookConfigured": true
+}
+```
+
+### Webhook
+
+```json
+{
+  "url": "https://your-endpoint.com/webhook"
+}
+```
+
+## Errors
+
+### 401 Unauthorized
+
+```json
+{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid"
+  }
+}
+```

@@ -1,0 +1,182 @@
+---
+title: "Webhooks"
+description: "Custom integrations with webhooks"
+---
+
+Webhooks allow you to send certificate notifications to any HTTP endpoint, enabling custom integrations with your own systems.
+
+## Setting Up Webhooks
+
+<Steps>
+  <Step title="Go to Channels">
+    Navigate to **Channels** in the sidebar.
+  </Step>
+  <Step title="Add Webhook Channel">
+    Click **Add Channel** and select **Webhook**.
+  </Step>
+  <Step title="Enter Webhook URL">
+    Enter the URL that should receive notifications.
+  </Step>
+  <Step title="Configure Settings">
+    - Set a name for the webhook
+    - Add custom headers if needed
+    - Choose notification types
+  </Step>
+  <Step title="Save">
+    Click **Add Channel** to complete setup.
+  </Step>
+</Steps>
+
+## Webhook Payload
+
+CertWatch sends a JSON payload to your endpoint:
+
+```json
+{
+  "event": "certificate.expiring",
+  "timestamp": "2025-01-08T12:00:00Z",
+  "certificate": {
+    "id": "cert_abc123",
+    "domain": "example.com",
+    "status": "expiring",
+    "daysUntilExpiry": 7,
+    "expiresAt": "2025-01-15T15:00:00Z",
+    "issuer": "Let's Encrypt",
+    "subject": "example.com"
+  },
+  "organization": {
+    "id": "org_xyz789",
+    "name": "Acme Inc"
+  },
+  "threshold": 7
+}
+```
+
+## Event Types
+
+| Event | Description |
+|-------|-------------|
+| `certificate.expiring` | Certificate is within alert threshold |
+| `certificate.expired` | Certificate has expired |
+| `certificate.renewed` | New certificate detected |
+| `certificate.error` | Error checking certificate |
+
+## HTTP Details
+
+### Request Method
+
+All webhooks use `POST` requests.
+
+### Headers
+
+```http
+Content-Type: application/json
+User-Agent: CertWatch/1.0
+X-CertWatch-Event: certificate.expiring
+X-CertWatch-Delivery: del_abc123
+```
+
+### Custom Headers
+
+You can add custom headers for authentication:
+
+```http
+Authorization: Bearer your-secret-token
+X-Custom-Header: your-value
+```
+
+## Response Handling
+
+CertWatch expects:
+
+| Response Code | Meaning |
+|---------------|---------|
+| 2xx | Success - notification delivered |
+| 4xx | Client error - check configuration |
+| 5xx | Server error - will retry |
+
+### Retries
+
+If your endpoint returns an error, CertWatch will retry:
+
+- 1st retry: 1 minute
+- 2nd retry: 5 minutes
+- 3rd retry: 30 minutes
+- Final retry: 2 hours
+
+After all retries fail, the webhook will be marked as having an error.
+
+## Use Cases
+
+### PagerDuty Integration
+
+```json
+{
+  "url": "https://events.pagerduty.com/v2/enqueue",
+  "headers": {
+    "Content-Type": "application/json"
+  }
+}
+```
+
+### Zapier Integration
+
+Connect to Zapier's webhook trigger to automate workflows:
+
+- Create tickets in Jira
+- Send SMS via Twilio
+- Update spreadsheets
+- Trigger custom automations
+
+### Custom Monitoring
+
+Post to your own systems:
+
+- Update internal dashboards
+- Trigger renewal automation
+- Log to custom systems
+- Integrate with ITSM tools
+
+## Security
+
+<Warning>
+  Protect your webhook endpoints from unauthorized access.
+</Warning>
+
+Best practices:
+
+1. **Use HTTPS** - Always use secure endpoints
+2. **Verify source** - Check the `User-Agent` header
+3. **Use secrets** - Require authentication headers
+4. **Validate payload** - Verify the JSON structure
+
+## Testing Webhooks
+
+### Send Test
+
+1. Go to **Channels**
+2. Find your webhook
+3. Click **Send Test**
+4. Verify your endpoint receives the test payload
+
+### Local Development
+
+For testing locally, use a tunnel service:
+
+- [ngrok](https://ngrok.com)
+- [localtunnel](https://localtunnel.github.io)
+
+## Troubleshooting
+
+### Webhook Not Receiving Data
+
+- Verify the URL is publicly accessible
+- Check your server logs for incoming requests
+- Ensure your firewall allows CertWatch IPs
+- Test with a service like [webhook.site](https://webhook.site)
+
+### Invalid Payload
+
+- Verify you're parsing JSON correctly
+- Check the Content-Type header handling
+- Log the raw request body for debugging

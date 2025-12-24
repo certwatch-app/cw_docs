@@ -1,0 +1,77 @@
+---
+title: "Notifications Overview"
+description: "How CertWatch alerts you about certificate events"
+---
+
+CertWatch sends notifications through multiple channels to ensure you never miss an expiring certificate.
+
+## Notification Channels
+
+<CardGroup cols={2}>
+  <Card title="Email" icon="envelope" href="/notifications/email">
+    Receive alerts directly in your inbox.
+  </Card>
+  <Card title="Slack" icon="slack" href="/notifications/slack">
+    Get notifications in your Slack workspace.
+  </Card>
+  <Card title="Discord" icon="discord" href="/notifications/discord">
+    Post alerts to your Discord server.
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/notifications/webhooks">
+    Build custom integrations with webhooks.
+  </Card>
+</CardGroup>
+
+## When Notifications Are Sent
+
+Notifications are triggered based on your configured alert thresholds:
+
+| Threshold | Description |
+|-----------|-------------|
+| 30 days | Early planning reminder |
+| 14 days | Two-week warning |
+| 7 days | One-week warning |
+| 3 days | Urgent reminder |
+| 1 day | Final warning |
+
+<Note>
+  Each notification is sent only once per threshold per certificate. You won't receive duplicate alerts.
+</Note>
+
+## Notification Content
+
+Every notification includes:
+
+- **Domain name** - The affected certificate's domain
+- **Current status** - Valid, Expiring, or Expired
+- **Days remaining** - Time until expiration
+- **Expiration date** - Exact date and time
+- **Action link** - Direct link to view certificate in CertWatch
+
+## Managing Channels
+
+Navigate to **Channels** in the sidebar to:
+
+- View all configured notification channels
+- Add new channels
+- Edit existing channel settings
+- Test channel connectivity
+- Enable/disable channels
+
+## Channel Status
+
+Each channel shows its current status:
+
+| Status | Meaning |
+|--------|---------|
+| Active | Channel is working and will receive notifications |
+| Paused | Temporarily disabled by you |
+| Error | Issue with channel configuration |
+
+## Notification Preferences
+
+In **Settings**, you can configure:
+
+- **Daily digest** - Receive a summary of all certificate statuses
+- **Immediate alerts** - Get notified as soon as a threshold is reached
+- **Critical only** - Only notify for 3-day and 1-day thresholds

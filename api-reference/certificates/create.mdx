@@ -1,0 +1,129 @@
+---
+title: 'Add Certificate'
+description: 'Add a new certificate to monitor'
+api: 'POST /certificates'
+---
+
+## Request
+
+```bash
+curl -X POST https://api.certwatch.app/v1/certificates \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "domain": "example.com",
+    "name": "Main Website",
+    "port": 443,
+    "alertThresholds": [30, 14, 7, 3, 1]
+  }'
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `domain` | string | Yes | Domain to monitor |
+| `name` | string | No | Friendly name |
+| `port` | integer | No | Port number (default: 443) |
+| `alertThresholds` | array | No | Alert days (default: [30, 14, 7, 3, 1]) |
+
+### Example - Minimal
+
+```json
+{
+  "domain": "example.com"
+}
+```
+
+### Example - Full
+
+```json
+{
+  "domain": "api.example.com",
+  "name": "Production API",
+  "port": 8443,
+  "alertThresholds": [14, 7, 1]
+}
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "id": "cert_abc123",
+    "domain": "example.com",
+    "name": "Main Website",
+    "status": "valid",
+    "daysUntilExpiry": 89,
+    "expiresAt": "2025-04-08T15:00:00Z",
+    "issuedAt": "2025-01-08T15:00:00Z",
+    "issuer": "Let's Encrypt",
+    "subject": "example.com",
+    "port": 443,
+    "alertThresholds": [30, 14, 7, 3, 1],
+    "createdAt": "2025-01-08T12:00:00Z",
+    "updatedAt": "2025-01-08T12:00:00Z"
+  },
+  "meta": {
+    "requestId": "req_xyz789"
+  }
+}
+```
+
+## Errors
+
+### 400 Bad Request - Invalid Domain
+
+```json
+{
+  "error": {
+    "code": "invalid_domain",
+    "message": "The domain format is invalid"
+  }
+}
+```
+
+### 400 Bad Request - Duplicate Domain
+
+```json
+{
+  "error": {
+    "code": "duplicate_domain",
+    "message": "This domain is already being monitored"
+  }
+}
+```
+
+### 400 Bad Request - Certificate Not Found
+
+```json
+{
+  "error": {
+    "code": "certificate_not_found",
+    "message": "Could not retrieve SSL certificate from this domain"
+  }
+}
+```
+
+### 402 Payment Required - Limit Reached
+
+```json
+{
+  "error": {
+    "code": "certificate_limit_reached",
+    "message": "You have reached your certificate limit. Upgrade your plan to add more."
+  }
+}
+```
+
+### 401 Unauthorized
+
+```json
+{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid"
+  }
+}
+```

@@ -1,0 +1,107 @@
+---
+title: "Certificate Monitoring"
+description: "How CertWatch monitors and tracks your certificates"
+---
+
+## How Monitoring Works
+
+CertWatch continuously monitors your SSL certificates to ensure you're always informed about their status.
+
+### Monitoring Process
+
+<Steps>
+  <Step title="Connection">
+    CertWatch connects to your domain using TLS to retrieve the certificate.
+  </Step>
+  <Step title="Verification">
+    The certificate chain is validated against trusted root certificates.
+  </Step>
+  <Step title="Analysis">
+    Certificate details are extracted including expiration date, issuer, and subject.
+  </Step>
+  <Step title="Status Update">
+    The certificate status is updated in your dashboard.
+  </Step>
+  <Step title="Alert Check">
+    If expiration is within your thresholds, notifications are triggered.
+  </Step>
+</Steps>
+
+## Check Frequency
+
+| Event | Frequency |
+|-------|-----------|
+| Regular checks | Every 6 hours |
+| New certificate | Immediately on add |
+| Manual refresh | On-demand |
+| After alert | Next scheduled check |
+
+## Certificate Details View
+
+Click on any certificate to view detailed information:
+
+### Overview Tab
+
+- Domain name and status
+- Days until expiration
+- Visual timeline of certificate validity
+
+### Certificate Tab
+
+- Subject (CN and SANs)
+- Issuer organization
+- Valid from/to dates
+- Serial number
+- Signature algorithm
+
+### Chain Tab
+
+- Full certificate chain
+- Each certificate in the chain
+- Chain validation status
+
+## Manual Actions
+
+### Refresh Certificate
+
+Click the refresh icon to immediately check a certificate's current status. Useful after:
+
+- Renewing a certificate
+- Fixing a configuration issue
+- Verifying changes
+
+### Edit Certificate
+
+Modify certificate settings:
+
+- Update friendly name
+- Change port number
+- Adjust alert thresholds
+
+### Delete Certificate
+
+Remove a certificate from monitoring. This action:
+
+- Stops all monitoring for this domain
+- Removes all alert configurations
+- Cannot be undone
+
+## Certificate History
+
+CertWatch keeps track of certificate changes:
+
+- When the certificate was first added
+- Certificate renewals detected
+- Status changes over time
+- Alert notifications sent
+
+<Note>
+  Certificate history is available on Pro and Team plans.
+</Note>
+
+## Best Practices
+
+1. **Monitor all production domains** - Don't let any certificate slip through the cracks
+2. **Set multiple alert thresholds** - Get early warnings and final reminders
+3. **Use meaningful names** - Make certificates easy to identify
+4. **Review regularly** - Check your certificate list periodically for any issues

@@ -1,33 +1,101 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'API Introduction'
+description: 'Programmatic access to CertWatch'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+The CertWatch API allows you to programmatically manage certificates, notification channels, and retrieve monitoring data.
 
-## Welcome
+## Base URL
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+All API requests are made to:
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+https://api.certwatch.app/v1
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints require authentication using Bearer tokens.
+
+```bash
+curl https://api.certwatch.app/v1/certificates \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+See [Authentication](/api-reference/authentication) for details on obtaining and managing API keys.
+
+## Rate Limits
+
+| Plan | Requests per minute |
+|------|---------------------|
+| Pro | 60 |
+| Team | 300 |
+| Enterprise | 1000 |
+
+Rate limit headers are included in all responses:
+
+```http
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 58
+X-RateLimit-Reset: 1704067200
+```
+
+## Response Format
+
+All responses are JSON formatted:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
+{
+  "data": { ... },
+  "meta": {
+    "requestId": "req_abc123"
   }
-]
+}
 ```
+
+### Error Responses
+
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "The domain field is required",
+    "details": { ... }
+  },
+  "meta": {
+    "requestId": "req_abc123"
+  }
+}
+```
+
+## HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 201 | Created |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 429 | Rate Limited |
+| 500 | Server Error |
+
+## SDKs
+
+Official SDKs coming soon:
+
+- JavaScript/TypeScript
+- Python
+- Go
+
+## Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Certificates" icon="certificate" href="/api-reference/certificates/list">
+    List, create, and manage certificates
+  </Card>
+  <Card title="Channels" icon="bell" href="/api-reference/channels/list">
+    Manage notification channels
+  </Card>
+</CardGroup>

@@ -1,0 +1,80 @@
+---
+title: 'Delete Certificate'
+description: 'Remove a certificate from monitoring'
+api: 'DELETE /certificates/{id}'
+---
+
+## Request
+
+```bash
+curl -X DELETE https://api.certwatch.app/v1/certificates/cert_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Certificate ID (e.g., `cert_abc123`) |
+
+## Response
+
+```json
+{
+  "data": {
+    "id": "cert_abc123",
+    "deleted": true
+  },
+  "meta": {
+    "requestId": "req_xyz789"
+  }
+}
+```
+
+## Effects
+
+Deleting a certificate:
+
+- Immediately stops monitoring for the domain
+- Removes all alert configurations
+- Clears notification history for this certificate
+- Cannot be undone
+
+<Warning>
+  This action is permanent. Consider disabling alerts instead if you may want to monitor this domain again.
+</Warning>
+
+## Errors
+
+### 404 Not Found
+
+```json
+{
+  "error": {
+    "code": "certificate_not_found",
+    "message": "Certificate not found"
+  }
+}
+```
+
+### 401 Unauthorized
+
+```json
+{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid"
+  }
+}
+```
+
+### 403 Forbidden
+
+```json
+{
+  "error": {
+    "code": "permission_denied",
+    "message": "You do not have permission to delete this certificate"
+  }
+}
+```

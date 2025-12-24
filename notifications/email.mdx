@@ -1,0 +1,107 @@
+---
+title: "Email Notifications"
+description: "Configure email alerts for certificate events"
+---
+
+Email is the default notification channel in CertWatch. Every account can receive email notifications.
+
+## Default Email
+
+Your account email is automatically set up to receive notifications when you sign up.
+
+## Adding Email Channels
+
+To add additional email recipients:
+
+<Steps>
+  <Step title="Go to Channels">
+    Navigate to **Channels** in the sidebar.
+  </Step>
+  <Step title="Add Channel">
+    Click **Add Channel** and select **Email**.
+  </Step>
+  <Step title="Enter Email Address">
+    Enter the email address that should receive notifications.
+  </Step>
+  <Step title="Configure Settings">
+    Choose which types of alerts this email should receive.
+  </Step>
+  <Step title="Save">
+    Click **Add Channel** to save.
+  </Step>
+</Steps>
+
+## Email Content
+
+CertWatch emails include:
+
+- Clear subject line with certificate status
+- Domain name and expiration date
+- Days remaining until expiry
+- Direct link to view certificate in dashboard
+- Unsubscribe link
+
+### Example Email
+
+```
+Subject: [CertWatch] Certificate expiring in 7 days: example.com
+
+The SSL certificate for example.com is expiring soon.
+
+Domain: example.com
+Status: Expiring Soon
+Days Remaining: 7
+Expires: January 15, 2025 at 3:00 PM UTC
+
+View Certificate: https://certwatch.app/certificates/abc123
+
+---
+You're receiving this because you're monitoring this certificate.
+Unsubscribe: https://certwatch.app/unsubscribe/...
+```
+
+## Managing Emails
+
+### Edit Email Channel
+
+1. Go to **Channels**
+2. Find the email channel
+3. Click **Edit**
+4. Update settings
+5. Save changes
+
+### Disable Notifications
+
+To temporarily stop receiving emails:
+
+1. Go to **Channels**
+2. Find the email channel
+3. Toggle the **Enabled** switch off
+
+### Delete Email Channel
+
+1. Go to **Channels**
+2. Find the email channel
+3. Click **Delete**
+4. Confirm deletion
+
+<Warning>
+  Deleting a channel cannot be undone. You'll need to add it again if you want to restore it.
+</Warning>
+
+## Troubleshooting
+
+### Not Receiving Emails
+
+1. **Check spam folder** - CertWatch emails may be filtered
+2. **Verify email address** - Ensure no typos in the address
+3. **Check channel status** - Make sure the channel is enabled
+4. **Whitelist sender** - Add `notifications@certwatch.app` to your contacts
+
+### Email Delays
+
+Emails are typically delivered within seconds, but may be delayed by:
+
+- Email provider processing
+- Spam filtering systems
+- High email volume periods

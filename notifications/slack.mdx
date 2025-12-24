@@ -1,0 +1,115 @@
+---
+title: "Slack Integration"
+description: "Get certificate alerts in Slack"
+---
+
+Connect CertWatch to Slack to receive certificate notifications directly in your workspace channels.
+
+## Setting Up Slack
+
+<Steps>
+  <Step title="Go to Channels">
+    Navigate to **Channels** in the sidebar.
+  </Step>
+  <Step title="Add Slack Channel">
+    Click **Add Channel** and select **Slack**.
+  </Step>
+  <Step title="Connect to Slack">
+    Click **Connect to Slack**. You'll be redirected to Slack to authorize CertWatch.
+  </Step>
+  <Step title="Authorize">
+    Review the permissions and click **Allow** to authorize the integration.
+  </Step>
+  <Step title="Select Channel">
+    Choose which Slack channel should receive certificate alerts.
+  </Step>
+  <Step title="Save">
+    Click **Add Channel** to complete setup.
+  </Step>
+</Steps>
+
+## Permissions Required
+
+CertWatch requests minimal permissions:
+
+| Permission | Purpose |
+|------------|---------|
+| `chat:write` | Post messages to selected channel |
+| `channels:read` | List available channels for selection |
+
+<Note>
+  CertWatch cannot read your messages or access any channel content. We can only post notifications.
+</Note>
+
+## Slack Message Format
+
+CertWatch messages are formatted for easy reading:
+
+- Color-coded status (green, yellow, red)
+- Certificate domain as title
+- Expiration details in the body
+- Action button to view in CertWatch
+
+### Example Message
+
+```
+🔔 Certificate Expiring Soon
+
+example.com is expiring in 7 days
+
+Expires: January 15, 2025
+Status: Expiring Soon
+
+[View Certificate]
+```
+
+## Managing Slack Channels
+
+### Change Target Channel
+
+1. Go to **Channels**
+2. Find your Slack integration
+3. Click **Edit**
+4. Select a different Slack channel
+5. Save changes
+
+### Test Integration
+
+1. Go to **Channels**
+2. Find your Slack integration
+3. Click **Send Test**
+4. Check your Slack channel for the test message
+
+### Disconnect Slack
+
+1. Go to **Channels**
+2. Find your Slack integration
+3. Click **Delete**
+4. Confirm removal
+
+## Multiple Slack Channels
+
+You can add multiple Slack channels:
+
+- Different channels for different certificate groups
+- Separate channels for urgent vs. early warnings
+- Team-specific notification routing
+
+## Troubleshooting
+
+### Connection Failed
+
+- Ensure you're an admin or have permission to install apps
+- Check that your Slack workspace allows third-party integrations
+- Try disconnecting and reconnecting
+
+### Messages Not Appearing
+
+- Verify the channel is public or CertWatch was added to private channel
+- Check that the integration is enabled in CertWatch
+- Test the connection using the "Send Test" button
+
+### Wrong Channel
+
+- Edit the Slack channel in CertWatch settings
+- You can change the target channel without reconnecting

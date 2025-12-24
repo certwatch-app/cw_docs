@@ -1,0 +1,130 @@
+---
+title: "Discord Integration"
+description: "Get certificate alerts in Discord"
+---
+
+Send CertWatch notifications to your Discord server using webhooks.
+
+## Setting Up Discord
+
+<Steps>
+  <Step title="Create Discord Webhook">
+    In Discord:
+    1. Go to your server
+    2. Right-click on the channel for alerts
+    3. Select **Edit Channel**
+    4. Go to **Integrations** → **Webhooks**
+    5. Click **New Webhook**
+    6. Name it "CertWatch"
+    7. Click **Copy Webhook URL**
+  </Step>
+  <Step title="Go to Channels in CertWatch">
+    Navigate to **Channels** in the sidebar.
+  </Step>
+  <Step title="Add Discord Channel">
+    Click **Add Channel** and select **Discord**.
+  </Step>
+  <Step title="Paste Webhook URL">
+    Paste the webhook URL you copied from Discord.
+  </Step>
+  <Step title="Save">
+    Click **Add Channel** to complete setup.
+  </Step>
+</Steps>
+
+## Discord Message Format
+
+CertWatch sends rich embed messages:
+
+- Color-coded sidebar (green, yellow, red)
+- CertWatch branding
+- Certificate details as embed fields
+- Timestamp
+
+### Example Message
+
+```
+┌─────────────────────────────────┐
+│ 🛡️ CertWatch                    │
+├─────────────────────────────────┤
+│ Certificate Expiring Soon       │
+│                                 │
+│ Domain: example.com             │
+│ Days Left: 7                    │
+│ Expires: January 15, 2025       │
+│                                 │
+│ View: https://certwatch.app/... │
+│                     🟡 Warning  │
+└─────────────────────────────────┘
+```
+
+## Managing Discord Channels
+
+### Update Webhook URL
+
+1. Go to **Channels**
+2. Find your Discord integration
+3. Click **Edit**
+4. Paste the new webhook URL
+5. Save changes
+
+### Test Integration
+
+1. Go to **Channels**
+2. Find your Discord integration
+3. Click **Send Test**
+4. Check your Discord channel for the test message
+
+### Delete Integration
+
+1. Go to **Channels**
+2. Find your Discord integration
+3. Click **Delete**
+4. Confirm removal
+
+<Tip>
+  Remember to also delete the webhook in Discord if you no longer need it.
+</Tip>
+
+## Multiple Discord Channels
+
+Add multiple Discord channels for:
+
+- Different servers
+- Separate channels for production vs. staging
+- Severity-based routing (critical alerts to specific channel)
+
+## Webhook Security
+
+<Warning>
+  Keep your webhook URL private. Anyone with the URL can post messages to your channel.
+</Warning>
+
+Best practices:
+
+- Don't share webhook URLs publicly
+- Regenerate webhook if compromised
+- Use Discord's webhook management to track usage
+
+## Troubleshooting
+
+### Invalid Webhook URL
+
+- Ensure you copied the full URL
+- URL should start with `https://discord.com/api/webhooks/`
+- Check that the webhook still exists in Discord
+
+### Messages Not Appearing
+
+- Verify the webhook wasn't deleted in Discord
+- Check that the channel still exists
+- Ensure bot permissions on the channel
+- Test using the "Send Test" button
+
+### Rate Limiting
+
+Discord limits webhook messages. If you have many certificates expiring simultaneously:
+
+- Messages may be delayed
+- Consider consolidating to a daily digest
+- Use email for critical alerts as backup

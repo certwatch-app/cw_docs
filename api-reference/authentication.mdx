@@ -1,0 +1,134 @@
+---
+title: 'Authentication'
+description: 'How to authenticate with the CertWatch API'
+---
+
+All API requests require authentication using API keys.
+
+## Getting an API Key
+
+<Steps>
+  <Step title="Go to Settings">
+    Navigate to **Settings** in the sidebar.
+  </Step>
+  <Step title="Select API Keys">
+    Click the **API Keys** tab.
+  </Step>
+  <Step title="Create Key">
+    Click **Create API Key**.
+  </Step>
+  <Step title="Name Your Key">
+    Give your key a descriptive name (e.g., "Production Server", "CI/CD Pipeline").
+  </Step>
+  <Step title="Copy Key">
+    Copy the key immediately. It won't be shown again.
+  </Step>
+</Steps>
+
+<Warning>
+  API keys are shown only once at creation. Store them securely.
+</Warning>
+
+## Using API Keys
+
+Include your API key in the `Authorization` header:
+
+```bash
+curl https://api.certwatch.app/v1/certificates \
+  -H "Authorization: Bearer ck_live_abc123..."
+```
+
+## Key Types
+
+| Prefix | Type | Description |
+|--------|------|-------------|
+| `ck_live_` | Production | Full access to your organization |
+| `ck_test_` | Test | For development and testing |
+
+## Key Permissions
+
+API keys have the same permissions as the user who created them:
+
+- **Owner/Admin keys**: Full API access
+- **Member keys**: Read-only access
+
+## Security Best Practices
+
+1. **Never commit keys to version control**
+   ```bash
+   # Use environment variables
+   export CERTWATCH_API_KEY="ck_live_..."
+   ```
+
+2. **Rotate keys regularly**
+   - Create a new key
+   - Update your applications
+   - Delete the old key
+
+3. **Use separate keys per environment**
+   - Production key for production
+   - Test key for development/staging
+
+4. **Limit key exposure**
+   - Don't share keys in Slack/email
+   - Use secrets management (AWS Secrets Manager, HashiCorp Vault)
+
+## Revoking Keys
+
+To revoke an API key:
+
+1. Go to **Settings** → **API Keys**
+2. Find the key
+3. Click **Revoke**
+4. Confirm revocation
+
+Revoked keys immediately stop working.
+
+## Rate Limiting
+
+Rate limits are per API key:
+
+```http
+HTTP/1.1 429 Too Many Requests
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1704067200
+Retry-After: 30
+```
+
+Wait until `X-RateLimit-Reset` or the `Retry-After` seconds before retrying.
+
+## Errors
+
+### Invalid Key
+
+```json
+{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The provided API key is invalid"
+  }
+}
+```
+
+### Expired Key
+
+```json
+{
+  "error": {
+    "code": "expired_api_key",
+    "message": "This API key has been revoked"
+  }
+}
+```
+
+### Missing Key
+
+```json
+{
+  "error": {
+    "code": "missing_api_key",
+    "message": "No API key provided. Include Authorization header."
+  }
+}
+```
