@@ -2,6 +2,10 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "CertWatch Documentation",
+  "banner": {
+    "content": "CertWatch is currently in **Beta**. We'd love your [feedback](mailto:feedback@certwatch.app)!",
+    "dismissible": true
+  },
   "colors": {
     "primary": "#0066FF",
     "light": "#3385FF",
