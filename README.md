@@ -1,43 +1,51 @@
-# Mintlify Starter Kit
+# CertWatch Documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+This directory contains the documentation for [CertWatch](https://certwatch.app), built with [Mintlify](https://mintlify.com).
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
-
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
-
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
-
-## Development
-
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+## Structure
 
 ```
-npm i -g mint
+docs/
+├── docs.json              # Main configuration file
+├── index.mdx              # Documentation home page
+├── quickstart.mdx         # Getting started guide
+├── certificates/          # Certificate management docs
+├── notifications/         # Notification channel docs
+├── teams/                 # Teams & organizations docs
+└── api-reference/         # API documentation
 ```
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+## Local Development
 
+Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview documentation changes locally:
+
+```bash
+npm i -g mintlify
 ```
-mint dev
+
+Run the development server:
+
+```bash
+mintlify dev
 ```
 
 View your local preview at `http://localhost:3000`.
 
-## Publishing changes
+## Deployment
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
+Documentation is automatically deployed via the Mintlify GitHub integration when changes are pushed to the main branch.
 
-## Need help?
+## Contributing
 
-### Troubleshooting
+When adding or updating documentation:
 
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
+1. Follow the existing file structure and naming conventions
+2. Use MDX for rich content with React components
+3. Test changes locally with `mintlify dev` before pushing
+4. Ensure all internal links are valid
 
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+## Resources
+
+- [Mintlify Documentation](https://mintlify.com/docs)
+- [CertWatch App](https://certwatch.app)
+- [CertWatch Support](mailto:support@certwatch.app)
