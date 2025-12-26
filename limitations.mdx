@@ -10,6 +10,7 @@ description: "Current limitations and rate limits in CertWatch"
 | **Internal certificates** | Only publicly accessible endpoints are supported | Agent coming soon |
 | **mTLS endpoints** | Client certificate authentication not supported | Contact us for enterprise |
 | **Connection timeout** | 10 second limit for certificate retrieval | Contact us if you need more |
+| **Port restrictions** | Only ports 443, 8443, 8080, and 80 are supported | Security measure |
 | **API key access** | API keys for external integrations not yet available | Coming soon |
 | **Discord notifications** | Not yet available | Coming soon |
 | **CT log monitoring** | Certificate Transparency monitoring not available | Coming in future release |
@@ -28,6 +29,21 @@ These limits help ensure reliable service for all users.
 | API requests | 100 | per minute |
 
 If you hit a rate limit, wait a moment and try again. Rate limits reset every minute.
+
+---
+
+## Security Restrictions
+
+To protect the platform and our users, the following security restrictions are enforced:
+
+| Restriction | Details |
+|-------------|---------|
+| **Allowed ports** | Certificate checks only work on ports 443, 8443, 8080, and 80 |
+| **Private networks** | Internal/private IP addresses cannot be monitored (127.x.x.x, 10.x.x.x, 192.168.x.x, etc.) |
+| **Cloud metadata** | Cloud provider metadata endpoints are blocked |
+| **Webhook URLs** | Must use HTTPS and cannot target private IP ranges |
+
+These restrictions prevent abuse and protect both our infrastructure and your networks.
 
 ---
 
