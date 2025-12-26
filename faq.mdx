@@ -1,0 +1,46 @@
+---
+title: "Frequently Asked Questions"
+description: "Common questions about CertWatch"
+---
+
+## How does CertWatch monitor certificates?
+
+We connect to your domains over HTTPS and retrieve certificate information. We check expiration dates, validate the certificate chain, verify revocation status via OCSP and CRL, and detect weak cryptographic configurations.
+
+## How often are certificates checked?
+
+Depending on your plan, certificates are checked every 5 minutes to 6 hours. You can also trigger manual checks anytime from the dashboard.
+
+## What notification channels are supported?
+
+We support Email, Slack, Microsoft Teams, PagerDuty, and custom webhooks. Discord support is coming soon.
+
+## Is my data secure?
+
+Yes. We use 256-bit encryption for all data. We only store certificate metadata—never your private keys. All API communications use TLS 1.3.
+
+## Do you support Kubernetes/cert-manager?
+
+Kubernetes integration is coming soon! Our Helm agent will auto-discover cert-manager Certificate resources and TLS Secrets. Sign up for the beta to get early access when it launches.
+
+## What happens when my beta trial ends?
+
+After 45 days, you can upgrade to a paid plan with a 30% lifetime discount as a founding member, or continue on the free tier with limited features.
+
+## Why is my certificate showing as 'error'?
+
+This usually means we couldn't connect to your server. Common causes:
+- Domain is not publicly accessible
+- Firewall blocking our connection
+- DNS not resolving
+- Server not responding on the specified port
+
+See [Troubleshooting](/troubleshooting) for detailed solutions.
+
+## Can I monitor internal/private certificates?
+
+Not yet. Currently, certificates must be publicly accessible over the internet. We're working on an agent-based solution for internal certificates—coming soon.
+
+## How do I add team members?
+
+Go to **Settings → Team → Invite Member**. Enter their email address and select a role. They'll receive an invitation email to join your organization.

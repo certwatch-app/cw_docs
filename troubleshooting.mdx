@@ -1,0 +1,77 @@
+---
+title: "Troubleshooting"
+description: "Solutions to common issues with CertWatch"
+---
+
+## Certificate Status Issues
+
+### Certificate shows "error" status
+
+**Cause:** We couldn't establish a connection to retrieve the certificate.
+
+**Solutions:**
+1. Verify the domain is publicly accessible (try `curl -v https://yourdomain.com`)
+2. Check if your firewall allows inbound HTTPS connections
+3. Ensure DNS is properly configured for the domain
+4. Verify the server is running and accepting connections on the specified port
+
+### "Connection timeout" error
+
+**Cause:** The server didn't respond within 10 seconds.
+
+**Solutions:**
+1. Check if the server is under heavy load
+2. Verify network connectivity to the server
+3. If your server legitimately needs more time, [contact us](mailto:support@certwatch.app)
+
+### "DNS resolution failed"
+
+**Cause:** We couldn't resolve the hostname to an IP address.
+
+**Solutions:**
+1. Verify the hostname is spelled correctly
+2. Check your DNS configuration
+3. Ensure the domain's DNS records are publicly accessible
+
+### "Connection refused"
+
+**Cause:** The server actively refused our connection.
+
+**Solutions:**
+1. Verify the port is correct (default is 443)
+2. Ensure the service is running on that port
+3. Check firewall rules allow inbound connections
+
+### Wrong certificate detected
+
+**Cause:** A CDN, load balancer, or proxy is serving a different certificate.
+
+**Note:** The certificate we see is exactly what your users see. If this differs from your origin certificate, check your CDN/proxy configuration.
+
+---
+
+## Notification Issues
+
+### Not receiving alerts
+
+**Solutions:**
+1. Go to **Settings → Channels** and verify the channel is enabled
+2. Click "Test" to send a test notification
+3. Check the channel's last error message for details
+4. Verify alert routing rules include your certificates
+
+### Slack notifications not working
+
+**Cause:** The webhook URL may be invalid or expired.
+
+**Solutions:**
+1. Go to your Slack workspace settings and create a new incoming webhook
+2. Update the webhook URL in **Settings → Channels**
+3. Click "Test" to verify it works
+
+### Email notifications going to spam
+
+**Solutions:**
+1. Add `notifications@certwatch.app` to your email contacts
+2. Mark our emails as "Not spam" in your email client
+3. Check your organization's email filtering rules

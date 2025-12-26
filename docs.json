@@ -49,6 +49,14 @@
               "teams/members",
               "teams/billing"
             ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "faq",
+              "troubleshooting",
+              "limitations"
+            ]
           }
         ]
       },
