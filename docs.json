@@ -38,6 +38,7 @@
               "notifications/overview",
               "notifications/email",
               "notifications/slack",
+              "notifications/pagerduty",
               "notifications/discord",
               "notifications/webhooks"
             ]

@@ -1,0 +1,193 @@
+---
+title: "PagerDuty Integration"
+description: "Trigger PagerDuty incidents for certificate alerts"
+---
+
+Connect CertWatch to PagerDuty to automatically create incidents when certificates need attention, enabling your on-call team to respond to critical expirations.
+
+## Setting Up PagerDuty
+
+<Steps>
+  <Step title="Create a Service (if needed)">
+    In PagerDuty, go to **Services** → **Service Directory** → **New Service**.
+
+    Name your service (e.g., "Certificate Monitoring") and assign an escalation policy.
+  </Step>
+  <Step title="Add Events API v2 Integration">
+    In your service, go to the **Integrations** tab and click **Add Integration**.
+
+    Search for **Events API v2** and select it, then click **Add**.
+  </Step>
+  <Step title="Copy Integration Key">
+    Click on the integration to reveal the **Integration Key** (32-character string).
+
+    Copy this key - you'll need it for CertWatch.
+  </Step>
+  <Step title="Add to CertWatch">
+    1. Go to **Channels** in CertWatch
+    2. Click **Add Channel** and select **PagerDuty**
+    3. Paste the Integration Key
+    4. Name your channel (e.g., "Ops Team PagerDuty")
+    5. Click **Create Channel**
+  </Step>
+</Steps>
+
+## How It Works
+
+### Incident Creation
+
+When a certificate crosses an alert threshold, CertWatch triggers a PagerDuty incident containing:
+
+- **Summary**: Description of the certificate issue
+- **Severity**: Based on urgency (critical, warning, or info)
+- **Source**: The affected domain name
+- **Custom Details**: Domain, expiry date, issuer, days remaining
+- **Link**: Direct link to view the certificate in CertWatch
+
+### Severity Mapping
+
+CertWatch maps certificate status to PagerDuty severity levels:
+
+| Certificate Status | PagerDuty Severity | When |
+|-------------------|-------------------|------|
+| Critical | `critical` | Expired or 1-3 days remaining |
+| Warning | `warning` | 7-14 days remaining |
+| Info | `info` | 30+ days remaining |
+
+<Note>
+  You can configure your PagerDuty escalation policies to handle different severities appropriately - for example, only paging on-call for critical alerts.
+</Note>
+
+## Automatic Deduplication
+
+CertWatch uses **stable dedup keys** to prevent duplicate incidents for the same issue.
+
+### How Dedup Keys Work
+
+Each incident is assigned a unique key based on:
+- Certificate ID
+- Alert type (e.g., "expiring", "expired", "error")
+
+```
+certwatch-{certificate-id}-{alert-type}
+```
+
+This means:
+
+- **Same certificate, same issue** → Updates the existing incident (no duplicates)
+- **Same certificate, different issue** → Creates a new incident
+- **Different certificate** → Creates a new incident
+
+### Example
+
+If `api.example.com` triggers a "7 days remaining" warning:
+1. CertWatch creates incident with dedup key `certwatch-abc123-expiring`
+2. If another check runs before renewal, it updates the same incident
+3. No duplicate pages to your on-call team
+
+## Automatic Resolution
+
+CertWatch automatically resolves PagerDuty incidents when the underlying issue is fixed.
+
+### When Incidents Auto-Resolve
+
+| Scenario | What Happens |
+|----------|-------------|
+| Certificate renewed | Incident resolved automatically |
+| Certificate replaced | Incident resolved automatically |
+| Expiry date extended | Incident resolved automatically |
+
+### How It Works
+
+1. CertWatch detects the certificate has been renewed (new expiry date)
+2. Using the same dedup key, CertWatch sends a `resolve` event to PagerDuty
+3. PagerDuty closes the incident automatically
+4. Your team sees the resolution in the incident timeline
+
+<Note>
+  Auto-resolution only occurs when CertWatch confirms the certificate issue is fixed. Manual acknowledgment in PagerDuty does not affect CertWatch monitoring.
+</Note>
+
+## PagerDuty Incident Details
+
+Each CertWatch incident includes rich context in the **Custom Details** section:
+
+| Field | Description |
+|-------|-------------|
+| `hostname` | The certificate's domain |
+| `alert_type` | Type of alert (expiring, expired, error) |
+| `days_until_expiry` | Days remaining until expiration |
+| `expiry_date` | Exact expiration date/time |
+| `issuer` | Certificate Authority that issued the cert |
+| `certificate_id` | CertWatch certificate ID |
+| `fix_recommendation` | Suggested remediation steps |
+
+## Managing PagerDuty Channels
+
+### Test Integration
+
+1. Go to **Channels**
+2. Find your PagerDuty integration
+3. Click **Send Test**
+4. Check PagerDuty for a test incident (it will auto-resolve after a few seconds)
+
+### Edit Integration Key
+
+1. Go to **Channels**
+2. Find your PagerDuty integration
+3. Click **Edit**
+4. Update the Integration Key
+5. Save changes
+
+### Remove Integration
+
+1. Go to **Channels**
+2. Find your PagerDuty integration
+3. Click **Delete**
+4. Confirm removal
+
+<Warning>
+  Removing the integration will not resolve existing PagerDuty incidents. You'll need to resolve those manually in PagerDuty.
+</Warning>
+
+## Multiple PagerDuty Services
+
+You can add multiple PagerDuty channels to route different certificates to different services:
+
+- Production certificates → Production Service (24/7 on-call)
+- Staging certificates → Dev Service (business hours only)
+- Internal certificates → Internal Service (low priority)
+
+## Troubleshooting
+
+### Incidents Not Creating
+
+- **Verify Integration Key**: Ensure the 32-character key is correct
+- **Check Service Status**: Make sure the PagerDuty service isn't disabled
+- **Escalation Policy**: Confirm the service has an escalation policy with on-call users
+
+### Test Notification Failed
+
+- **API Connectivity**: CertWatch needs to reach `events.pagerduty.com`
+- **Key Format**: Integration key should be exactly 32 characters
+- **Service Region**: Ensure you're using the correct PagerDuty region
+
+### Duplicate Incidents
+
+If you see duplicate incidents:
+- Ensure you haven't created multiple PagerDuty channels for the same service
+- Check if someone manually created an incident outside CertWatch
+
+### Incidents Not Auto-Resolving
+
+- **Certificate Must Be Renewed**: CertWatch only resolves when it detects a new certificate
+- **Same Dedup Key Required**: Resolution uses the same key as the trigger
+- **Check Certificate Status**: Verify the certificate shows as valid in CertWatch
+
+## Best Practices
+
+1. **Use Descriptive Channel Names**: Name channels after the team or service they route to
+2. **Configure Escalation Policies**: Set up appropriate escalation for different severity levels
+3. **Set Up Maintenance Windows**: Use PagerDuty maintenance windows for planned certificate renewals
+4. **Leverage Auto-Resolution**: Trust CertWatch to resolve incidents when certificates are renewed
+5. **Monitor PagerDuty Analytics**: Track incident frequency to identify problematic certificates
