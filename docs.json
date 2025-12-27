@@ -107,6 +107,10 @@
   "navbar": {
     "links": [
       {
+        "label": "Pricing",
+        "href": "https://certwatch.app/pricing"
+      },
+      {
         "label": "Support",
         "href": "mailto:support@certwatch.app"
       }
@@ -127,7 +131,26 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/certwatchapp"
-    }
+      "x": "https://x.com/certwatchapp",
+      "discord": "https://discord.gg/ndA6jd5ReR"
+    },
+    "links": [
+      {
+        "label": "CertWatch Home",
+        "href": "https://certwatch.app"
+      },
+      {
+        "label": "Pricing",
+        "href": "https://certwatch.app/pricing"
+      },
+      {
+        "label": "Privacy Policy",
+        "href": "https://certwatch.app/privacy"
+      },
+      {
+        "label": "Terms of Service",
+        "href": "https://certwatch.app/terms"
+      }
+    ]
   }
 }
