@@ -2,6 +2,12 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "CertWatch Documentation",
+  "seo": {
+    "indexHiddenPages": false
+  },
+  "integrations": {
+    "googleSearchConsole": "googlef1ead552d07916c4"
+  },
   "banner": {
     "content": "CertWatch is currently in **Beta**. We'd love your [feedback](mailto:feedback@certwatch.app)!",
     "dismissible": true
