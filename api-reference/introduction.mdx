@@ -15,11 +15,11 @@ https://api.certwatch.app/v1
 
 ## Authentication
 
-All API endpoints require authentication using Bearer tokens.
+All API endpoints require authentication using API keys.
 
 ```bash
 curl https://api.certwatch.app/v1/certificates \
-  -H "Authorization: Bearer YOUR_API_KEY"
+  -H "X-API-Key: cw_your_key_here..."
 ```
 
 See [Authentication](/api-reference/authentication) for details on obtaining and managing API keys.

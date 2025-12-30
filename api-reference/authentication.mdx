@@ -8,17 +8,17 @@ All API requests require authentication using API keys.
 ## Getting an API Key
 
 <Steps>
-  <Step title="Go to Settings">
-    Navigate to **Settings** in the sidebar.
-  </Step>
-  <Step title="Select API Keys">
-    Click the **API Keys** tab.
+  <Step title="Go to API Keys">
+    Navigate to **API Keys** in the sidebar.
   </Step>
   <Step title="Create Key">
     Click **Create API Key**.
   </Step>
   <Step title="Name Your Key">
-    Give your key a descriptive name (e.g., "Production Server", "CI/CD Pipeline").
+    Give your key a descriptive name (e.g., "Production Lambda", "CI/CD Pipeline").
+  </Step>
+  <Step title="Select Scopes">
+    Choose the permissions for your key (read, write, cloud:sync, or full access).
   </Step>
   <Step title="Copy Key">
     Copy the key immediately. It won't be shown again.
@@ -31,26 +31,33 @@ All API requests require authentication using API keys.
 
 ## Using API Keys
 
-Include your API key in the `Authorization` header:
+Include your API key in the `X-API-Key` header:
 
 ```bash
 curl https://api.certwatch.app/v1/certificates \
-  -H "Authorization: Bearer ck_live_abc123..."
+  -H "X-API-Key: cw_a1b2c3d4_your_secret_here..."
 ```
 
-## Key Types
+## Key Format
 
-| Prefix | Type | Description |
-|--------|------|-------------|
-| `ck_live_` | Production | Full access to your organization |
-| `ck_test_` | Test | For development and testing |
+API keys follow this format: `cw_<prefix>_<secret>`
 
-## Key Permissions
+| Part | Description |
+|------|-------------|
+| `cw_` | CertWatch prefix (always present) |
+| `<prefix>` | 8-character identifier (visible in dashboard) |
+| `<secret>` | 64-character secret (shown only once) |
 
-API keys have the same permissions as the user who created them:
+## Key Scopes
 
-- **Owner/Admin keys**: Full API access
-- **Member keys**: Read-only access
+API keys use granular scopes to control access:
+
+| Scope | Description |
+|-------|-------------|
+| `read` | Read certificates, alerts, channels |
+| `write` | Create, update, delete resources |
+| `cloud:sync` | AWS ACM Lambda sync integration |
+| `*` | Full access (all permissions) |
 
 ## Security Best Practices
 
