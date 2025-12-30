@@ -1,5 +1,7 @@
 # CertWatch Documentation
 
+[![GitHub](https://img.shields.io/badge/GitHub-certwatch--app%2Fdocs-blue)](https://github.com/certwatch-app/docs)
+
 This directory contains the documentation for [CertWatch](https://certwatch.app), built with [Mintlify](https://mintlify.com).
 
 ## Structure
