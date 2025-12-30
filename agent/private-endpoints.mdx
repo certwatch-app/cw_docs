@@ -1,0 +1,191 @@
+---
+title: "Private Endpoints"
+description: "Monitor certificates on internal infrastructure"
+---
+
+The CertWatch Agent excels at monitoring SSL certificates that aren't accessible from the public internet.
+
+## Use Cases
+
+### Internal APIs
+
+Monitor certificates on internal microservices:
+
+```yaml
+certificates:
+  - hostname: "user-service.internal"
+    port: 8443
+    tags: ["internal", "api"]
+    notes: "User authentication service"
+
+  - hostname: "payment-service.internal"
+    port: 8443
+    tags: ["internal", "api", "pci"]
+    notes: "Payment processing (PCI scope)"
+```
+
+### Database Servers
+
+Monitor TLS on database connections:
+
+```yaml
+certificates:
+  - hostname: "postgres-primary.db.internal"
+    port: 5432
+    tags: ["database", "production"]
+    notes: "Primary PostgreSQL server"
+
+  - hostname: "mysql-replica.db.internal"
+    port: 3306
+    tags: ["database", "replica"]
+```
+
+### Mail Servers
+
+Monitor SMTP, IMAP, and POP3 certificates:
+
+```yaml
+certificates:
+  # SMTP with STARTTLS
+  - hostname: "smtp.example.com"
+    port: 587
+    tags: ["mail", "smtp"]
+
+  # IMAPS
+  - hostname: "imap.example.com"
+    port: 993
+    tags: ["mail", "imap"]
+
+  # POP3S
+  - hostname: "pop3.example.com"
+    port: 995
+    tags: ["mail", "pop3"]
+```
+
+### Kubernetes Ingress
+
+Monitor certificates on Kubernetes ingress controllers:
+
+```yaml
+certificates:
+  - hostname: "ingress-nginx.kube-system.svc.cluster.local"
+    port: 443
+    tags: ["kubernetes", "ingress"]
+
+  - hostname: "api.internal.k8s"
+    port: 6443
+    tags: ["kubernetes", "api-server"]
+```
+
+### Load Balancers
+
+Monitor internal load balancer certificates:
+
+```yaml
+certificates:
+  - hostname: "internal-lb.vpc.local"
+    port: 443
+    tags: ["load-balancer", "internal"]
+```
+
+### VPN Endpoints
+
+Monitor VPN server certificates:
+
+```yaml
+certificates:
+  - hostname: "vpn.company.internal"
+    port: 443
+    tags: ["vpn", "security"]
+    notes: "Corporate VPN gateway"
+```
+
+## Network Requirements
+
+The agent needs **outbound HTTPS** access to:
+
+| Destination | Port | Purpose |
+|-------------|------|---------|
+| `api.certwatch.app` | 443 | Sync certificate data |
+| Your monitored endpoints | Various | Scan certificates |
+
+<Note>
+  No inbound ports need to be opened. The agent only makes outbound connections.
+</Note>
+
+## Multiple Agents
+
+Run multiple agents for different network segments:
+
+```yaml
+# Agent 1: Production network
+# /etc/certwatch/production.yaml
+agent:
+  name: "production-network"
+
+certificates:
+  - hostname: "api.prod.internal"
+    port: 443
+```
+
+```yaml
+# Agent 2: Development network
+# /etc/certwatch/development.yaml
+agent:
+  name: "development-network"
+
+certificates:
+  - hostname: "api.dev.internal"
+    port: 443
+```
+
+Each agent appears separately in your CertWatch dashboard with its own certificates.
+
+## Tagging Strategy
+
+Use tags to organize certificates by:
+
+- **Environment**: `production`, `staging`, `development`
+- **Service type**: `api`, `web`, `database`, `mail`
+- **Compliance**: `pci`, `hipaa`, `sox`
+- **Team**: `platform`, `security`, `devops`
+
+```yaml
+certificates:
+  - hostname: "payment-api.internal"
+    port: 443
+    tags:
+      - production
+      - api
+      - pci
+      - payments-team
+    notes: "Payment API - PCI DSS scope"
+```
+
+## Self-Signed Certificates
+
+The agent can monitor self-signed certificates and certificates from private CAs. It will report:
+
+- Certificate details (subject, issuer, expiration)
+- Chain validation status
+- Days until expiration
+
+<Note>
+  Self-signed certificates will show a chain validation warning, but all other data is captured and monitored.
+</Note>
+
+## IP Addresses
+
+You can monitor certificates by IP address:
+
+```yaml
+certificates:
+  - hostname: "10.0.1.50"
+    port: 443
+    tags: ["internal"]
+    notes: "Internal service by IP"
+```
+
+<Warning>
+  When monitoring by IP, SNI (Server Name Indication) is not sent. Some servers may return a different certificate or refuse the connection.
+</Warning>

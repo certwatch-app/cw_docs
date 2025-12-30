@@ -1,0 +1,215 @@
+---
+title: "Docker Deployment"
+description: "Run CertWatch Agent in Docker"
+---
+
+## Quick Start
+
+```bash
+docker run -d \
+  --name cw-agent \
+  --restart unless-stopped \
+  -v $(pwd)/certwatch.yaml:/etc/certwatch/certwatch.yaml:ro \
+  ghcr.io/certwatch-app/cw-agent:latest
+```
+
+## Docker Compose
+
+Create a `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  cw-agent:
+    image: ghcr.io/certwatch-app/cw-agent:latest
+    container_name: cw-agent
+    restart: unless-stopped
+    volumes:
+      - ./certwatch.yaml:/etc/certwatch/certwatch.yaml:ro
+    environment:
+      # Optional: Override config values
+      - CW_LOG_LEVEL=info
+```
+
+Start with:
+
+```bash
+docker compose up -d
+```
+
+## Configuration
+
+### Option 1: Mount Config File
+
+Mount your `certwatch.yaml` into the container:
+
+```bash
+docker run -d \
+  -v /path/to/certwatch.yaml:/etc/certwatch/certwatch.yaml:ro \
+  ghcr.io/certwatch-app/cw-agent:latest
+```
+
+### Option 2: Environment Variables
+
+Pass configuration via environment variables:
+
+```bash
+docker run -d \
+  -e CW_API_KEY="cw_xxxxxxxx..." \
+  -e CW_AGENT_NAME="docker-agent" \
+  -e CW_CERTIFICATES="api.example.com,www.example.com" \
+  ghcr.io/certwatch-app/cw-agent:latest
+```
+
+<Warning>
+  Environment variable mode requires `CW_API_KEY` and `CW_CERTIFICATES` at minimum.
+</Warning>
+
+## Monitoring Internal Services
+
+To monitor services on your Docker network, use the container name or service name:
+
+```yaml
+# docker-compose.yml
+services:
+  cw-agent:
+    image: ghcr.io/certwatch-app/cw-agent:latest
+    volumes:
+      - ./certwatch.yaml:/etc/certwatch/certwatch.yaml:ro
+    networks:
+      - backend
+
+  your-api:
+    image: your-api:latest
+    networks:
+      - backend
+
+networks:
+  backend:
+```
+
+```yaml
+# certwatch.yaml
+certificates:
+  - hostname: "your-api"  # Container name
+    port: 443
+    tags: ["docker", "internal"]
+```
+
+## Logs
+
+View container logs:
+
+```bash
+# Follow logs
+docker logs -f cw-agent
+
+# Last 100 lines
+docker logs --tail 100 cw-agent
+
+# With timestamps
+docker logs -t cw-agent
+```
+
+## Health Checks
+
+The image includes a health check. View health status:
+
+```bash
+docker inspect --format='{{.State.Health.Status}}' cw-agent
+```
+
+## Updating
+
+```bash
+# Pull latest image
+docker pull ghcr.io/certwatch-app/cw-agent:latest
+
+# Restart container with Docker Compose
+docker compose up -d
+
+# Or with plain Docker
+docker stop cw-agent
+docker rm cw-agent
+docker run -d ... # (same run command)
+```
+
+## Image Tags
+
+| Tag | Description |
+|-----|-------------|
+| `latest` | Latest stable release |
+| `X.Y.Z` | Specific version (e.g., `0.2.1`) |
+| `X.Y` | Latest patch of a minor version |
+
+## Multi-Architecture Support
+
+The image supports both AMD64 and ARM64 architectures:
+
+```bash
+# Explicitly pull for a specific architecture
+docker pull --platform linux/amd64 ghcr.io/certwatch-app/cw-agent:latest
+docker pull --platform linux/arm64 ghcr.io/certwatch-app/cw-agent:latest
+```
+
+## Kubernetes
+
+For Kubernetes deployments, use a ConfigMap for the configuration:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: certwatch-agent-config
+data:
+  certwatch.yaml: |
+    api:
+      key: "${CW_API_KEY}"
+    agent:
+      name: "k8s-agent"
+    certificates:
+      - hostname: "internal-api.default.svc.cluster.local"
+        port: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: certwatch-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: certwatch-agent
+  template:
+    metadata:
+      labels:
+        app: certwatch-agent
+    spec:
+      containers:
+        - name: cw-agent
+          image: ghcr.io/certwatch-app/cw-agent:latest
+          volumeMounts:
+            - name: config
+              mountPath: /etc/certwatch
+          env:
+            - name: CW_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: certwatch-secrets
+                  key: api-key
+      volumes:
+        - name: config
+          configMap:
+            name: certwatch-agent-config
+```
+
+## Security Considerations
+
+The CertWatch Agent Docker image:
+
+- Based on **distroless** (minimal attack surface)
+- Runs as **non-root** user
+- Contains **only** the agent binary
+- No shell or package manager included
+- Read-only filesystem recommended

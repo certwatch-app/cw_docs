@@ -1,0 +1,233 @@
+---
+title: "Troubleshooting"
+description: "Common issues and solutions"
+---
+
+## Connection Issues
+
+### Cannot Connect to Certificate Endpoint
+
+**Symptoms:**
+- Agent logs show "connection refused" or "timeout"
+- Certificates appear as "Unknown" status
+
+**Solutions:**
+
+1. **Verify the endpoint is reachable:**
+   ```bash
+   openssl s_client -connect hostname:port -servername hostname
+   ```
+
+2. **Check firewall rules:**
+   ```bash
+   telnet hostname port
+   # or
+   nc -zv hostname port
+   ```
+
+3. **Verify DNS resolution:**
+   ```bash
+   nslookup hostname
+   # or
+   dig hostname
+   ```
+
+4. **Test with curl:**
+   ```bash
+   curl -vI https://hostname:port
+   ```
+
+### Cannot Sync with CertWatch API
+
+**Symptoms:**
+- "Failed to sync" errors in logs
+- Certificates not appearing in dashboard
+
+**Solutions:**
+
+1. **Check outbound connectivity:**
+   ```bash
+   curl -v https://api.certwatch.app/health
+   ```
+
+2. **Verify API key:**
+   - Ensure the key starts with `cw_`
+   - Check the key has `cloud:sync` scope
+   - Generate a new key if expired
+
+3. **Check proxy settings:**
+   ```bash
+   export HTTPS_PROXY=http://proxy:8080
+   cw-agent start -c certwatch.yaml
+   ```
+
+4. **Check for corporate firewall:**
+   - Ensure `api.certwatch.app:443` is allowed
+   - Check if SSL inspection is interfering
+
+## Configuration Issues
+
+### Invalid Configuration
+
+Run validation:
+
+```bash
+cw-agent validate -c certwatch.yaml
+```
+
+Common errors:
+
+| Error | Solution |
+|-------|----------|
+| `key must start with 'cw_' prefix` | Check your API key format |
+| `sync_interval must be at least 30 seconds` | Increase sync interval |
+| `hostname is required` | Add hostname to certificate entry |
+| `duplicate hostname:port` | Remove duplicate certificate entries |
+| `concurrency must be between 1 and 50` | Adjust concurrency setting |
+
+### Agent Name Changed Warning
+
+If you see:
+
+```
+Agent name changed: "old-name" -> "new-name"
+```
+
+Options:
+
+1. **Continue with new agent (recommended for intentional changes):**
+   ```bash
+   cw-agent start -c certwatch.yaml --reset-agent
+   ```
+
+2. **Revert to old name:**
+   ```yaml
+   agent:
+     name: "old-name"  # Revert this
+   ```
+
+## State Issues
+
+### State File Corrupted
+
+If the agent won't start due to state file issues:
+
+```bash
+# Remove state file (agent will re-register)
+rm .certwatch-state.json
+
+# Or reset via command
+cw-agent start -c certwatch.yaml --reset-agent --yes
+```
+
+<Warning>
+  Resetting the agent creates a new agent ID. Existing certificates will be orphaned (moved to dashboard management).
+</Warning>
+
+### State File Location
+
+The state file is stored alongside your config file:
+
+- Config: `/etc/certwatch/certwatch.yaml`
+- State: `/etc/certwatch/.certwatch-state.json`
+
+### Permission Issues
+
+If the agent can't write the state file:
+
+```bash
+# Check ownership
+ls -la /etc/certwatch/
+
+# Fix permissions
+sudo chown certwatch:certwatch /etc/certwatch/
+sudo chmod 755 /etc/certwatch/
+```
+
+## Logging
+
+### Enable Debug Logging
+
+```yaml
+agent:
+  log_level: debug
+```
+
+Or via environment:
+
+```bash
+CW_LOG_LEVEL=debug cw-agent start -c certwatch.yaml
+```
+
+### View Logs
+
+**Systemd:**
+```bash
+journalctl -u cw-agent -f
+```
+
+**Docker:**
+```bash
+docker logs -f cw-agent
+```
+
+**Direct run:**
+Logs output to stdout/stderr.
+
+### Log Levels
+
+| Level | Description |
+|-------|-------------|
+| `debug` | Verbose output, includes all scan details |
+| `info` | Normal operation, sync summaries |
+| `warn` | Warnings (e.g., certificate issues) |
+| `error` | Errors only |
+
+## Common Error Messages
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `certificate has expired` | Target cert is expired | Renew the certificate |
+| `x509: certificate signed by unknown authority` | Self-signed or private CA | Agent still reports the cert data |
+| `context deadline exceeded` | Network timeout | Check connectivity, increase timeout |
+| `connection refused` | Service not listening | Verify service is running on that port |
+| `no such host` | DNS resolution failed | Check DNS configuration |
+| `i/o timeout` | Network unreachable | Check firewall and routing |
+| `tls: handshake failure` | TLS version mismatch | Target may require specific TLS version |
+
+## Performance Issues
+
+### High CPU Usage
+
+1. **Reduce concurrency:**
+   ```yaml
+   agent:
+     concurrency: 5  # Lower from default 10
+   ```
+
+2. **Increase scan interval:**
+   ```yaml
+   agent:
+     scan_interval: 5m  # Less frequent scans
+   ```
+
+### High Memory Usage
+
+1. **Reduce number of certificates** per agent
+2. **Split across multiple agents** if monitoring many endpoints
+
+## Getting Help
+
+If you're still having issues:
+
+1. **Check the logs** with `debug` level enabled
+2. **Search existing issues** on [GitHub](https://github.com/certwatch-app/cw-agent/issues)
+3. **Open a new issue** with:
+   - Agent version (`cw-agent version`)
+   - Operating system and architecture
+   - Relevant log output (sanitize API keys!)
+   - Steps to reproduce
+
+<Card title="Contact Support" icon="envelope" href="mailto:support@certwatch.app">
+  Reach out to our support team for assistance.
+</Card>

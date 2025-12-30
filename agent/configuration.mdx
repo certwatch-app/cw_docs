@@ -1,0 +1,204 @@
+---
+title: "Configuration"
+description: "Configure the CertWatch Agent"
+---
+
+## Interactive Setup
+
+The easiest way to create a configuration file is using the interactive wizard:
+
+```bash
+cw-agent init
+```
+
+This guides you through:
+- Setting the config file path
+- Entering your CertWatch API key
+- Configuring agent name and intervals
+- Adding certificates to monitor
+
+## Configuration File
+
+The agent uses a YAML configuration file. By default, it looks for `certwatch.yaml` in the current directory.
+
+### Complete Example
+
+```yaml
+# CertWatch Agent Configuration
+
+api:
+  # CertWatch API endpoint (default: https://api.certwatch.app)
+  endpoint: "https://api.certwatch.app"
+
+  # API key with 'cloud:sync' scope
+  # Get this from: CertWatch Dashboard -> Settings -> API Keys
+  key: "cw_xxxxxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+  # HTTP request timeout (default: 30s)
+  timeout: 30s
+
+agent:
+  # Unique name for this agent (appears in dashboard)
+  name: "production-monitor"
+
+  # How often to sync data with CertWatch cloud (default: 5m)
+  # Minimum: 30s
+  sync_interval: 5m
+
+  # How often to scan certificates locally (default: 1m)
+  # Minimum: 10s
+  scan_interval: 1m
+
+  # Maximum concurrent certificate scans (default: 10)
+  # Range: 1-50
+  concurrency: 10
+
+  # Log level: debug, info, warn, error (default: info)
+  log_level: info
+
+certificates:
+  # Web server
+  - hostname: "www.example.com"
+    port: 443
+    tags:
+      - production
+      - web
+    notes: "Main website"
+
+  # API endpoint
+  - hostname: "api.example.com"
+    port: 443
+    tags:
+      - production
+      - api
+    notes: "REST API"
+
+  # Internal service (non-standard port)
+  - hostname: "internal-service.local"
+    port: 8443
+    tags:
+      - internal
+    notes: "Internal microservice"
+
+  # Mail server (IMAPS)
+  - hostname: "mail.example.com"
+    port: 993
+    tags:
+      - production
+      - mail
+    notes: "IMAP server"
+```
+
+## Configuration Reference
+
+### API Settings
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `api.endpoint` | string | `https://api.certwatch.app` | CertWatch API URL |
+| `api.key` | string | **required** | API key with `cloud:sync` scope |
+| `api.timeout` | duration | `30s` | HTTP request timeout |
+
+<Warning>
+  Never commit your API key to version control. Use environment variables for sensitive values.
+</Warning>
+
+### Agent Settings
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `agent.name` | string | `default-agent` | Unique identifier for this agent |
+| `agent.sync_interval` | duration | `5m` | How often to sync with cloud (min: 30s) |
+| `agent.scan_interval` | duration | `1m` | How often to scan certificates (min: 10s) |
+| `agent.concurrency` | int | `10` | Max concurrent scans (1-50) |
+| `agent.log_level` | string | `info` | Log level: debug, info, warn, error |
+
+### Certificate Settings
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `hostname` | string | **required** | Hostname or IP address to connect to |
+| `port` | int | `443` | Port number (1-65535) |
+| `tags` | []string | `[]` | Tags for organization (max 50 chars each) |
+| `notes` | string | `""` | Notes about this certificate (max 500 chars) |
+
+## Environment Variables
+
+All configuration options can be set via environment variables with the `CW_` prefix:
+
+```bash
+export CW_API_KEY="cw_xxxxxxxx..."
+export CW_AGENT_NAME="my-agent"
+export CW_SYNC_INTERVAL="10m"
+export CW_LOG_LEVEL="debug"
+```
+
+Environment variables override values in the config file.
+
+### Non-Interactive Mode
+
+For CI/CD pipelines, use environment variables with `--non-interactive`:
+
+```bash
+CW_API_KEY="cw_xxx" \
+CW_AGENT_NAME="ci-agent" \
+CW_CERTIFICATES="api.example.com,www.example.com" \
+  cw-agent init --non-interactive -o certwatch.yaml
+```
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `CW_API_KEY` | Yes | API key with `cloud:sync` scope |
+| `CW_API_ENDPOINT` | No | API endpoint URL |
+| `CW_AGENT_NAME` | No | Agent name (default: `default-agent`) |
+| `CW_SYNC_INTERVAL` | No | Sync interval (e.g., `5m`) |
+| `CW_SCAN_INTERVAL` | No | Scan interval (e.g., `1m`) |
+| `CW_LOG_LEVEL` | No | Log level |
+| `CW_CERTIFICATES` | Yes | Comma-separated hostnames |
+
+## Validation
+
+Validate your configuration without starting the agent:
+
+```bash
+cw-agent validate -c certwatch.yaml
+```
+
+```
+ CertWatch Agent - Config Validation
+
+✓ Configuration loaded
+✓ API settings valid
+✓ Agent settings valid
+✓ 5 certificates configured
+
+─── Summary ──────────────────────────
+
+  Agent         production-monitor
+  Certificates  5
+  Sync          5m
+  Scan          1m
+
+✓ Configuration is valid!
+```
+
+## Getting an API Key
+
+<Steps>
+  <Step title="Log in to CertWatch">
+    Go to [certwatch.app](https://certwatch.app) and sign in.
+  </Step>
+  <Step title="Navigate to API Keys">
+    Go to **Settings** -> **API Keys**.
+  </Step>
+  <Step title="Create a New Key">
+    Click **Create API Key** and select the `cloud:sync` scope.
+  </Step>
+  <Step title="Copy the Key">
+    Copy the key immediately - it's only shown once!
+  </Step>
+</Steps>
+
+<Warning>
+  The API key is only displayed once when created. Store it securely.
+</Warning>

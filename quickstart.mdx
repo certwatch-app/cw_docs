@@ -97,6 +97,32 @@ Once set up, you can verify your configuration:
 2. **Test Notifications** - Use the "Send Test" button on any notification channel
 3. **Review Dashboard** - Your dashboard shows an overview of all monitored certificates
 
+## Monitor Private Endpoints
+
+For certificates on internal infrastructure that CertWatch can't reach from the cloud, install the CertWatch Agent:
+
+<Steps>
+  <Step title="Install the Agent">
+    ```bash
+    curl -sSL https://certwatch.app/install.sh | bash
+    ```
+  </Step>
+  <Step title="Configure">
+    ```bash
+    cw-agent init
+    ```
+  </Step>
+  <Step title="Start Monitoring">
+    ```bash
+    cw-agent start -c certwatch.yaml
+    ```
+  </Step>
+</Steps>
+
+<Card title="Agent Documentation" icon="terminal" href="/agent/overview">
+  Learn more about monitoring private endpoints with the CertWatch Agent.
+</Card>
+
 ## Next Steps
 
 <CardGroup cols={2}>

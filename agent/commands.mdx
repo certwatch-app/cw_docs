@@ -1,0 +1,169 @@
+---
+title: "CLI Reference"
+description: "CertWatch Agent command-line reference"
+---
+
+## Global Flags
+
+These flags work with all commands:
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--config` | `-c` | Path to configuration file |
+| `--help` | `-h` | Show help for any command |
+
+## Commands
+
+### `cw-agent init`
+
+Initialize a new configuration file using an interactive wizard.
+
+```bash
+cw-agent init [flags]
+```
+
+**Flags:**
+
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--output` | `-o` | `./certwatch.yaml` | Output file path |
+| `--non-interactive` | | `false` | Use environment variables instead of prompts |
+
+**Examples:**
+
+```bash
+# Interactive mode
+cw-agent init
+
+# Specify output path
+cw-agent init -o /etc/certwatch/certwatch.yaml
+
+# Non-interactive mode (for CI/CD)
+CW_API_KEY=cw_xxx CW_CERTIFICATES=example.com \
+  cw-agent init --non-interactive -o certwatch.yaml
+```
+
+---
+
+### `cw-agent start`
+
+Start the monitoring agent.
+
+```bash
+cw-agent start [flags]
+```
+
+**Flags:**
+
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--config` | `-c` | `./certwatch.yaml` | Path to config file |
+| `--reset-agent` | | `false` | Reset agent state and re-register |
+| `--yes` | `-y` | `false` | Skip confirmation prompts |
+
+**Examples:**
+
+```bash
+# Start with default config
+cw-agent start
+
+# Start with specific config
+cw-agent start -c /etc/certwatch/certwatch.yaml
+
+# Reset agent (creates new agent, migrates certificates)
+cw-agent start -c certwatch.yaml --reset-agent
+
+# Reset without confirmation (for CI/automation)
+cw-agent start -c certwatch.yaml --reset-agent --yes
+```
+
+**Agent State:**
+
+The agent persists its state in `.certwatch-state.json` alongside your config file. This enables:
+
+- **Restart resilience** - Agent ID survives restarts
+- **Name change detection** - Warns if you change `agent.name` in config
+- **Certificate migration** - When resetting, certificates transfer to new agent
+
+---
+
+### `cw-agent validate`
+
+Validate configuration without starting the agent.
+
+```bash
+cw-agent validate [flags]
+```
+
+**Flags:**
+
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--config` | `-c` | `./certwatch.yaml` | Path to config file |
+
+**Example:**
+
+```bash
+cw-agent validate -c certwatch.yaml
+```
+
+**Output:**
+
+```
+CertWatch Agent - Config Validation
+
+[✓] Configuration loaded
+[✓] API settings valid
+[✓] Agent settings valid
+[✓] 5 certificates configured
+
+Summary
+  Agent         production-monitor
+  Certificates  5
+  Sync          5m
+  Scan          1m
+
+[✓] Configuration is valid!
+```
+
+---
+
+### `cw-agent version`
+
+Display version information.
+
+```bash
+cw-agent version
+```
+
+**Output:**
+
+```
+CertWatch Agent v0.2.1
+
+  Version     v0.2.1
+  Commit      abc1234
+  Build Date  2025-01-01
+  Go Version  go1.22.0
+  Platform    linux/amd64
+```
+
+---
+
+## Exit Codes
+
+| Code | Description |
+|------|-------------|
+| `0` | Success |
+| `1` | General error (config invalid, connection failed, etc.) |
+| `130` | Interrupted (Ctrl+C) |
+
+## Signals
+
+The agent handles the following signals gracefully:
+
+| Signal | Behavior |
+|--------|----------|
+| `SIGINT` (Ctrl+C) | Graceful shutdown |
+| `SIGTERM` | Graceful shutdown |
+| `SIGHUP` | Reload configuration (planned) |

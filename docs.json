@@ -68,6 +68,39 @@
         ]
       },
       {
+        "tab": "Agent",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "agent/overview",
+              "agent/installation",
+              "agent/configuration"
+            ]
+          },
+          {
+            "group": "CLI Reference",
+            "pages": [
+              "agent/commands"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "agent/systemd",
+              "agent/docker"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "agent/private-endpoints",
+              "agent/troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API Reference",
         "groups": [
           {

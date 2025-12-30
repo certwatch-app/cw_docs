@@ -1,0 +1,116 @@
+---
+title: "Installation"
+description: "Install the CertWatch Agent on your infrastructure"
+---
+
+## Quick Install (Linux/macOS)
+
+The fastest way to install:
+
+```bash
+curl -sSL https://certwatch.app/install.sh | bash
+```
+
+This script:
+- Detects your OS and architecture
+- Downloads the latest release from GitHub
+- Installs to `/usr/local/bin/cw-agent`
+- Verifies the installation
+
+<Tip>
+  You can also specify a custom install directory: `INSTALL_DIR=/custom/path curl -sSL https://certwatch.app/install.sh | bash`
+</Tip>
+
+## Package Managers
+
+### Homebrew (macOS/Linux)
+
+```bash
+brew install certwatch-app/tap/cw-agent
+```
+
+### Go Install
+
+```bash
+go install github.com/certwatch-app/cw-agent/cmd/cw-agent@latest
+```
+
+<Note>
+  Requires Go 1.21 or later.
+</Note>
+
+## Docker
+
+```bash
+docker pull ghcr.io/certwatch-app/cw-agent:latest
+```
+
+See the [Docker deployment guide](/agent/docker) for complete instructions.
+
+## Manual Download
+
+Download pre-built binaries from the [GitHub Releases](https://github.com/certwatch-app/cw-agent/releases) page.
+
+| Platform | Architecture | Download |
+|----------|--------------|----------|
+| Linux | x86_64 (amd64) | `cw-agent_X.X.X_linux_amd64.tar.gz` |
+| Linux | ARM64 | `cw-agent_X.X.X_linux_arm64.tar.gz` |
+| macOS | x86_64 (Intel) | `cw-agent_X.X.X_darwin_amd64.tar.gz` |
+| macOS | ARM64 (Apple Silicon) | `cw-agent_X.X.X_darwin_arm64.tar.gz` |
+| Windows | x86_64 | `cw-agent_X.X.X_windows_amd64.zip` |
+
+### Manual Installation Steps
+
+<Steps>
+  <Step title="Download">
+    ```bash
+    curl -LO https://github.com/certwatch-app/cw-agent/releases/latest/download/cw-agent_X.X.X_linux_amd64.tar.gz
+    ```
+  </Step>
+  <Step title="Extract">
+    ```bash
+    tar -xzf cw-agent_X.X.X_linux_amd64.tar.gz
+    ```
+  </Step>
+  <Step title="Install">
+    ```bash
+    sudo mv cw-agent /usr/local/bin/
+    sudo chmod +x /usr/local/bin/cw-agent
+    ```
+  </Step>
+  <Step title="Verify">
+    ```bash
+    cw-agent version
+    ```
+  </Step>
+</Steps>
+
+## Verify Installation
+
+After installation, verify the agent is working:
+
+```bash
+cw-agent version
+```
+
+Expected output:
+```
+CertWatch Agent v0.2.1
+
+  Version     v0.2.1
+  Commit      abc1234
+  Build Date  2025-01-01
+  Go Version  go1.22.0
+  Platform    linux/amd64
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configure the Agent" icon="gear" href="/agent/configuration">
+    Create your certwatch.yaml configuration file.
+  </Card>
+  <Card title="Run as a Service" icon="server" href="/agent/systemd">
+    Set up the agent to run automatically on boot.
+  </Card>
+</CardGroup>

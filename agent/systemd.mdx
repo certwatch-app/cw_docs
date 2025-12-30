@@ -1,0 +1,182 @@
+---
+title: "Systemd Service"
+description: "Run CertWatch Agent as a Linux service"
+---
+
+Run the CertWatch Agent as a systemd service for automatic startup and restart on failure.
+
+## Prerequisites
+
+- Linux with systemd (Ubuntu 16.04+, CentOS 7+, Debian 8+)
+- CertWatch Agent installed in `/usr/local/bin/cw-agent`
+- Configuration file at `/etc/certwatch/certwatch.yaml`
+
+## Setup
+
+### 1. Create a System User
+
+Create a dedicated user for running the agent:
+
+```bash
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin certwatch
+```
+
+### 2. Create Configuration Directory
+
+```bash
+sudo mkdir -p /etc/certwatch
+sudo chown certwatch:certwatch /etc/certwatch
+```
+
+### 3. Create Configuration File
+
+```bash
+sudo -u certwatch cw-agent init -o /etc/certwatch/certwatch.yaml
+```
+
+Or copy an existing configuration:
+
+```bash
+sudo cp certwatch.yaml /etc/certwatch/
+sudo chown certwatch:certwatch /etc/certwatch/certwatch.yaml
+sudo chmod 600 /etc/certwatch/certwatch.yaml  # Protect API key
+```
+
+### 4. Create Service File
+
+Create `/etc/systemd/system/cw-agent.service`:
+
+```ini
+[Unit]
+Description=CertWatch Agent
+Documentation=https://docs.certwatch.app/agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=certwatch
+Group=certwatch
+ExecStart=/usr/local/bin/cw-agent start -c /etc/certwatch/certwatch.yaml
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cw-agent
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/etc/certwatch
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### 5. Enable and Start
+
+```bash
+# Reload systemd
+sudo systemctl daemon-reload
+
+# Enable on boot
+sudo systemctl enable cw-agent
+
+# Start the service
+sudo systemctl start cw-agent
+
+# Check status
+sudo systemctl status cw-agent
+```
+
+## Managing the Service
+
+```bash
+# Start
+sudo systemctl start cw-agent
+
+# Stop
+sudo systemctl stop cw-agent
+
+# Restart
+sudo systemctl restart cw-agent
+
+# View status
+sudo systemctl status cw-agent
+
+# View logs
+sudo journalctl -u cw-agent -f
+
+# View recent logs
+sudo journalctl -u cw-agent --since "1 hour ago"
+```
+
+## Configuration Changes
+
+After modifying `/etc/certwatch/certwatch.yaml`:
+
+```bash
+sudo systemctl restart cw-agent
+```
+
+## Log Rotation
+
+Logs are managed by journald. To configure retention:
+
+```bash
+# Edit journald config
+sudo nano /etc/systemd/journald.conf
+```
+
+Add or modify:
+
+```ini
+[Journal]
+SystemMaxUse=500M
+MaxRetentionSec=1month
+```
+
+Then restart journald:
+
+```bash
+sudo systemctl restart systemd-journald
+```
+
+## Troubleshooting
+
+### Service Won't Start
+
+Check the logs:
+
+```bash
+sudo journalctl -u cw-agent -n 50 --no-pager
+```
+
+Common issues:
+- **Permission denied**: Ensure `certwatch` user owns the config file
+- **Config validation failed**: Run `cw-agent validate -c /etc/certwatch/certwatch.yaml`
+- **API key invalid**: Verify the API key in your config
+
+### Service Keeps Restarting
+
+If the service is in a restart loop:
+
+```bash
+# Check restart count
+sudo systemctl show cw-agent --property=NRestarts
+
+# View logs around restarts
+sudo journalctl -u cw-agent -p err
+```
+
+### Check Service Details
+
+```bash
+# Show full service status
+sudo systemctl status cw-agent -l
+
+# Show service properties
+sudo systemctl show cw-agent
+```
