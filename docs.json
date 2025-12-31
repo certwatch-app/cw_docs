@@ -62,7 +62,8 @@
             "pages": [
               "faq",
               "troubleshooting",
-              "limitations"
+              "limitations",
+              "ai-tools"
             ]
           }
         ]
@@ -165,13 +166,18 @@
       "copy",
       "view",
       "chatgpt",
-      "claude"
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
     ]
   },
   "footer": {
     "socials": {
       "x": "https://x.com/certwatchapp",
-      "discord": "https://discord.gg/ndA6jd5ReR"
+      "discord": "https://discord.gg/ndA6jd5ReR",
+      "linkedin": "https://www.linkedin.com/company/certwatch-app"
     }
   }
 }

@@ -1,0 +1,103 @@
+---
+title: "AI Tools Integration"
+description: "Connect CertWatch docs to Claude, Cursor, VS Code and other AI tools"
+---
+
+# AI Tools Integration
+
+CertWatch documentation supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/), allowing AI assistants to search our docs directly while helping you.
+
+## MCP Server URL
+```
+https://docs.certwatch.app/mcp
+```
+
+## Why Use This?
+
+When connected, AI tools can:
+- Answer questions about cw-agent setup accurately
+- Help troubleshoot certificate issues using our docs
+- Generate correct API calls based on our reference
+
+No more copy-pasting docs into chat windows.
+
+---
+
+## Connect Your AI Tools
+
+<Tabs>
+  <Tab title="Claude">
+    1. Go to [Claude Settings → Connectors](https://claude.ai/settings/connectors)
+    2. Click **Add custom connector**
+    3. Enter:
+       - **Name:** `CertWatch`
+       - **URL:** `https://docs.certwatch.app/mcp`
+    4. Click **Add**
+    
+    Now when you ask Claude about CertWatch, it searches our docs automatically.
+  </Tab>
+  
+  <Tab title="Claude Code">
+    Run this command:
+```bash
+    claude mcp add --transport http CertWatch https://docs.certwatch.app/mcp
+```
+    
+    Verify with:
+```bash
+    claude mcp list
+```
+  </Tab>
+  
+  <Tab title="Cursor">
+    Add to your `.cursor/mcp.json`:
+```json
+    {
+      "mcpServers": {
+        "CertWatch": {
+          "url": "https://docs.certwatch.app/mcp"
+        }
+      }
+    }
+```
+    
+    Or use the contextual menu on any docs page → **Connect to Cursor**
+  </Tab>
+  
+  <Tab title="VS Code">
+    Create `.vscode/mcp.json` in your project:
+```json
+    {
+      "servers": {
+        "CertWatch": {
+          "type": "http",
+          "url": "https://docs.certwatch.app/mcp"
+        }
+      }
+    }
+```
+    
+    Or use the contextual menu on any docs page → **Connect to VS Code**
+  </Tab>
+</Tabs>
+
+---
+
+## Quick Access
+
+Use the contextual menu (top-right of any page) for one-click setup:
+
+- **Copy MCP server URL** - for manual configuration
+- **Connect to Cursor** - installs automatically  
+- **Connect to VS Code** - installs automatically
+
+---
+
+## Example Prompts
+
+Once connected, try asking your AI assistant:
+
+- "How do I install cw-agent on macOS?"
+- "What notification channels does CertWatch support?"
+- "Show me how to add a certificate via API"
+- "How do I configure cw-agent for private endpoints?"
