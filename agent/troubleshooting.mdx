@@ -216,6 +216,112 @@ Logs output to stdout/stderr.
 1. **Reduce number of certificates** per agent
 2. **Split across multiple agents** if monitoring many endpoints
 
+## Metrics & Health Endpoint Issues
+
+### Metrics Not Available
+
+**Symptoms:**
+- Cannot access `/metrics` endpoint
+- Prometheus not scraping metrics
+
+**Solutions:**
+
+1. **Verify metrics are enabled:**
+   ```yaml
+   agent:
+     metrics_port: 8080  # Must be > 0
+   ```
+
+2. **Check the endpoint:**
+   ```bash
+   curl http://localhost:8080/metrics
+   ```
+
+3. **Verify port is not in use:**
+   ```bash
+   netstat -tlnp | grep 8080
+   ```
+
+### Health Probes Failing
+
+**Symptoms:**
+- `/readyz` returns 503
+- `/livez` returns 503
+- Kubernetes pod keeps restarting
+
+**Solutions:**
+
+1. **`/readyz` returning 503:**
+   - This is normal during initialization
+   - Wait for the agent to complete its first scan
+
+2. **`/livez` returning 503:**
+   - No successful scan in the last 10 minutes
+   - Check if certificates are reachable
+   - Review logs for scan errors
+
+3. **Increase probe delays in Kubernetes:**
+   ```yaml
+   livenessProbe:
+     initialDelaySeconds: 60  # Increase if needed
+     periodSeconds: 30
+   ```
+
+## Helm Chart Issues
+
+### Installation Fails
+
+**Symptoms:**
+- `helm install` fails with validation errors
+
+**Common issues:**
+
+| Error | Solution |
+|-------|----------|
+| `agent.name is required` | Add `--set agent.name=my-agent` |
+| `apiKey.value or apiKey.existingSecret.name is required` | Provide API key via `--set apiKey.value=...` or `--set apiKey.existingSecret.name=...` |
+| `secret not found` | Create the secret before installing: `kubectl create secret generic cw-agent-api-key --from-literal=api-key=cw_xxx` |
+
+### Pod Not Starting
+
+```bash
+# Check pod status
+kubectl get pods -l app.kubernetes.io/name=cw-agent
+
+# View pod events
+kubectl describe pod -l app.kubernetes.io/name=cw-agent
+
+# View logs
+kubectl logs -l app.kubernetes.io/name=cw-agent
+```
+
+### ServiceMonitor Not Working
+
+**Symptoms:**
+- Prometheus not discovering the agent
+- No metrics in Prometheus
+
+**Solutions:**
+
+1. **Verify ServiceMonitor is created:**
+   ```bash
+   kubectl get servicemonitor -l app.kubernetes.io/name=cw-agent
+   ```
+
+2. **Check ServiceMonitor labels match Prometheus selector:**
+   ```yaml
+   serviceMonitor:
+     enabled: true
+     labels:
+       release: prometheus  # Must match your Prometheus selector
+   ```
+
+3. **Verify the service is accessible:**
+   ```bash
+   kubectl port-forward svc/cw-agent 8080:8080
+   curl http://localhost:8080/metrics
+   ```
+
 ## Getting Help
 
 If you're still having issues:

@@ -47,6 +47,41 @@ docker pull ghcr.io/certwatch-app/cw-agent:latest
 
 See the [Docker deployment guide](/agent/docker) for complete instructions.
 
+## Kubernetes (Helm)
+
+Deploy using our official Helm chart from the OCI registry:
+
+### Quick Install (Testing)
+
+```bash
+helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent \
+  --set agent.name=my-cluster \
+  --set apiKey.value=cw_your_api_key_here \
+  --set certificates[0].hostname=api.example.com
+```
+
+<Warning>
+  When using `apiKey.value`, the key is stored in Helm release history. Use `apiKey.existingSecret` for production deployments.
+</Warning>
+
+### Production Install (Recommended)
+
+```bash
+# Create a secret for your API key
+kubectl create secret generic cw-agent-api-key \
+  --from-literal=api-key=cw_your_api_key_here
+
+# Install the chart
+helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent \
+  --set agent.name=my-cluster \
+  --set apiKey.existingSecret.name=cw-agent-api-key \
+  --set certificates[0].hostname=api.example.com
+```
+
+<Card title="Full Kubernetes Guide" icon="dharmachakra" href="/agent/kubernetes">
+  See complete Helm chart configuration, GitOps examples, and more.
+</Card>
+
 ## Manual Download
 
 Download pre-built binaries from the [GitHub Releases](https://github.com/certwatch-app/cw-agent/releases) page.
@@ -95,9 +130,9 @@ cw-agent version
 
 Expected output:
 ```
-CertWatch Agent v0.2.1
+CertWatch Agent v0.4.1
 
-  Version     v0.2.1
+  Version     v0.4.1
   Commit      abc1234
   Build Date  2025-01-01
   Go Version  go1.22.0

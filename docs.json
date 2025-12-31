@@ -89,12 +89,14 @@
             "group": "Deployment",
             "pages": [
               "agent/systemd",
-              "agent/docker"
+              "agent/docker",
+              "agent/kubernetes"
             ]
           },
           {
             "group": "Advanced",
             "pages": [
+              "agent/observability",
               "agent/private-endpoints",
               "agent/troubleshooting"
             ]

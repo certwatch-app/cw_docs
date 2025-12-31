@@ -1,0 +1,240 @@
+---
+title: "Observability"
+description: "Prometheus metrics and health endpoints"
+---
+
+The CertWatch Agent exposes Prometheus metrics and Kubernetes-compatible health endpoints for comprehensive observability.
+
+## Enabling Metrics
+
+Metrics and health endpoints are enabled by default on port `8080`. Configure via:
+
+```yaml
+agent:
+  metrics_port: 8080  # Set to 0 to disable
+```
+
+Or via environment variable:
+
+```bash
+export CW_METRICS_PORT=8080
+```
+
+## Prometheus Metrics
+
+Metrics are exposed at `http://localhost:8080/metrics` in Prometheus format.
+
+### Certificate Metrics
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `certwatch_certificate_days_until_expiry` | Gauge | hostname, port | Days until certificate expires |
+| `certwatch_certificate_valid` | Gauge | hostname, port | Certificate validity (1=valid, 0=invalid) |
+| `certwatch_certificate_chain_valid` | Gauge | hostname, port | Chain validity (1=valid, 0=invalid) |
+| `certwatch_certificate_expiry_timestamp_seconds` | Gauge | hostname, port | Certificate expiry as Unix timestamp |
+
+### Scan Metrics
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `certwatch_scan_total` | Counter | status | Total scans by status (success/failure) |
+| `certwatch_scan_duration_seconds` | Histogram | | Time taken to complete scans |
+
+### Sync Metrics
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `certwatch_sync_total` | Counter | status | Total syncs by status (success/failure) |
+| `certwatch_sync_duration_seconds` | Histogram | | Time taken to sync with cloud |
+
+### Heartbeat Metrics
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `certwatch_heartbeat_total` | Counter | status | Total heartbeats by status |
+
+### Agent Info
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `certwatch_agent_info` | Gauge | version, name, agent_id | Agent metadata |
+| `certwatch_agent_certificates_configured` | Gauge | | Number of certificates configured |
+
+## Health Endpoints
+
+The agent exposes Kubernetes-compatible health check endpoints:
+
+| Endpoint | Description | Use Case |
+|----------|-------------|----------|
+| `/healthz` | Basic liveness check | Always returns OK if server is running |
+| `/readyz` | Readiness probe | Returns 503 during initialization |
+| `/livez` | Deep liveness check | Returns 503 if no successful scans in 10 minutes |
+
+### Kubernetes Probe Configuration
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /livez
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  failureThreshold: 3
+```
+
+<Note>
+  When using the Helm chart, these probes are pre-configured automatically.
+</Note>
+
+## Heartbeat & Offline Alerts
+
+The agent sends periodic heartbeats to CertWatch to enable offline detection:
+
+```yaml
+agent:
+  heartbeat_interval: 30s  # Set to 0 to disable
+```
+
+When heartbeats stop arriving, CertWatch can alert you that an agent has gone offline. This is useful for:
+
+- Detecting network issues between agent and cloud
+- Monitoring agent health across distributed infrastructure
+- Alerting when agents crash or are terminated
+
+## Prometheus Scrape Config
+
+Add the agent to your Prometheus configuration:
+
+```yaml
+scrape_configs:
+  - job_name: 'certwatch-agent'
+    static_configs:
+      - targets: ['localhost:8080']
+    scrape_interval: 30s
+```
+
+### Kubernetes ServiceMonitor
+
+If using the Prometheus Operator with our Helm chart:
+
+```yaml
+# values.yaml
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  labels:
+    release: prometheus  # Match your Prometheus selector
+```
+
+See the [Kubernetes deployment guide](/agent/kubernetes) for full details.
+
+## Alerting Examples
+
+### Prometheus Alertmanager Rules
+
+```yaml
+groups:
+  - name: certwatch
+    rules:
+      # Certificate expiring soon
+      - alert: CertificateExpiringSoon
+        expr: certwatch_certificate_days_until_expiry < 30
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Certificate expiring soon"
+          description: "{{ $labels.hostname }}:{{ $labels.port }} expires in {{ $value }} days"
+
+      # Certificate expiring very soon
+      - alert: CertificateExpiringCritical
+        expr: certwatch_certificate_days_until_expiry < 7
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Certificate expiring critically soon"
+          description: "{{ $labels.hostname }}:{{ $labels.port }} expires in {{ $value }} days"
+
+      # Certificate invalid
+      - alert: CertificateInvalid
+        expr: certwatch_certificate_valid == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Certificate is invalid"
+          description: "{{ $labels.hostname }}:{{ $labels.port }} certificate validation failed"
+
+      # Chain validation failed
+      - alert: CertificateChainInvalid
+        expr: certwatch_certificate_chain_valid == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Certificate chain validation failed"
+          description: "{{ $labels.hostname }}:{{ $labels.port }} has chain issues"
+
+      # Agent not scanning
+      - alert: AgentNotScanning
+        expr: rate(certwatch_scan_total[10m]) == 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CertWatch agent not scanning"
+          description: "No scans have occurred in the last 15 minutes"
+```
+
+## Grafana Dashboard
+
+Create a Grafana dashboard with these panels:
+
+### Certificate Overview
+
+```promql
+# Certificates by days until expiry
+sort_desc(certwatch_certificate_days_until_expiry)
+
+# Certificates expiring within 30 days
+count(certwatch_certificate_days_until_expiry < 30)
+
+# Invalid certificates
+count(certwatch_certificate_valid == 0)
+```
+
+### Agent Health
+
+```promql
+# Scan success rate
+rate(certwatch_scan_total{status="success"}[5m]) / rate(certwatch_scan_total[5m])
+
+# Sync success rate
+rate(certwatch_sync_total{status="success"}[5m]) / rate(certwatch_sync_total[5m])
+
+# Scan duration (p99)
+histogram_quantile(0.99, rate(certwatch_scan_duration_seconds_bucket[5m]))
+```
+
+## Disabling Observability
+
+To run without metrics and health endpoints:
+
+```yaml
+agent:
+  metrics_port: 0
+  heartbeat_interval: 0
+```
+
+<Warning>
+  Disabling metrics removes the ability to use Kubernetes health probes. The agent will rely only on process liveness.
+</Warning>

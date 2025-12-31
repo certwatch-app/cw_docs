@@ -1,0 +1,367 @@
+---
+title: "Kubernetes Deployment"
+description: "Deploy CertWatch Agent with Helm"
+---
+
+Deploy the CertWatch Agent to Kubernetes using our official Helm chart, distributed via OCI registry.
+
+## Prerequisites
+
+- Kubernetes 1.19+
+- Helm 3.8+
+- CertWatch account with API key
+
+## Quick Start
+
+### Testing (Direct API Key)
+
+For quick testing, provide the API key directly:
+
+```bash
+helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent \
+  --set agent.name=my-cluster-agent \
+  --set apiKey.value=cw_your_api_key_here \
+  --set certificates[0].hostname=api.example.com \
+  --set certificates[0].port=443
+```
+
+<Warning>
+  When using `apiKey.value`, the key is stored in Helm release history. Use `apiKey.existingSecret` for production deployments.
+</Warning>
+
+### Production (Recommended)
+
+For production, create a Kubernetes Secret first:
+
+```bash
+# Step 1: Create the secret
+kubectl create secret generic cw-agent-api-key \
+  --from-literal=api-key=cw_your_api_key_here
+
+# Step 2: Install the chart referencing the secret
+helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent \
+  --set agent.name=my-cluster-agent \
+  --set apiKey.existingSecret.name=cw-agent-api-key \
+  --set certificates[0].hostname=api.example.com \
+  --set certificates[0].port=443
+```
+
+## Configuration
+
+### Using a Values File
+
+Create a `values.yaml` for your deployment:
+
+```yaml
+agent:
+  name: production-cluster
+  syncInterval: 10m
+  scanInterval: 1m
+
+apiKey:
+  existingSecret:
+    name: cw-agent-api-key
+    key: api-key
+
+certificates:
+  - hostname: api.mycompany.com
+    port: 443
+    tags:
+      - production
+      - api
+  - hostname: web.mycompany.com
+    port: 443
+    tags:
+      - production
+      - web
+  - hostname: internal-service.default.svc.cluster.local
+    port: 8443
+    tags:
+      - internal
+
+serviceMonitor:
+  enabled: true
+  labels:
+    release: prometheus
+```
+
+Install with your values file:
+
+```bash
+helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent -f values.yaml
+```
+
+### Configuration Reference
+
+#### API Key Options
+
+| Parameter | Description |
+|-----------|-------------|
+| `apiKey.value` | API key value (creates Secret, not for production) |
+| `apiKey.existingSecret.name` | Name of existing Secret with API key |
+| `apiKey.existingSecret.key` | Key in the Secret containing API key (default: `api-key`) |
+
+#### Agent Settings
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `agent.name` | `""` | **Required.** Unique agent name |
+| `agent.logLevel` | `info` | Log level: debug, info, warn, error |
+| `agent.syncInterval` | `5m` | How often to sync with CertWatch cloud |
+| `agent.scanInterval` | `1m` | How often to scan certificates |
+| `agent.concurrency` | `10` | Max concurrent certificate scans |
+| `agent.metricsPort` | `8080` | Prometheus metrics port (0 to disable) |
+| `agent.heartbeatInterval` | `30s` | Heartbeat interval for offline alerts |
+
+#### Certificate Configuration
+
+| Parameter | Description |
+|-----------|-------------|
+| `certificates` | List of certificates to monitor |
+| `certificates[].hostname` | Hostname to connect to |
+| `certificates[].port` | Port (default: 443) |
+| `certificates[].tags` | Tags for organization |
+| `certificates[].notes` | Notes about this certificate |
+
+#### Kubernetes Resources
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `replicaCount` | `1` | Number of replicas |
+| `image.repository` | `ghcr.io/certwatch-app/cw-agent` | Container image |
+| `image.tag` | `""` | Image tag (defaults to chart appVersion) |
+| `resources.limits.cpu` | `100m` | CPU limit |
+| `resources.limits.memory` | `128Mi` | Memory limit |
+| `resources.requests.cpu` | `10m` | CPU request |
+| `resources.requests.memory` | `32Mi` | Memory request |
+
+### External ConfigMap
+
+For complex deployments, use an existing ConfigMap containing the full `certwatch.yaml`:
+
+```yaml
+existingConfigMap:
+  name: my-certwatch-config
+  key: certwatch.yaml
+```
+
+## GitOps Integration
+
+### ArgoCD
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cw-agent
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: ghcr.io/certwatch-app/helm-charts
+    chart: cw-agent
+    targetRevision: 0.4.1
+    helm:
+      values: |
+        agent:
+          name: production-cluster
+        apiKey:
+          existingSecret:
+            name: cw-agent-api-key
+        certificates:
+          - hostname: api.example.com
+            port: 443
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+```
+
+<Note>
+  Create the API key secret in the target namespace before deploying.
+</Note>
+
+### FluxCD
+
+```yaml
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: cw-agent
+  namespace: flux-system
+spec:
+  interval: 5m
+  url: oci://ghcr.io/certwatch-app/helm-charts/cw-agent
+  ref:
+    tag: 0.4.1
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cw-agent
+  namespace: monitoring
+spec:
+  interval: 5m
+  chartRef:
+    kind: OCIRepository
+    name: cw-agent
+    namespace: flux-system
+  values:
+    agent:
+      name: production-cluster
+    apiKey:
+      existingSecret:
+        name: cw-agent-api-key
+    certificates:
+      - hostname: api.example.com
+        port: 443
+```
+
+## Prometheus Integration
+
+### Enable ServiceMonitor
+
+If you're using Prometheus Operator:
+
+```yaml
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  labels:
+    release: prometheus  # Match your Prometheus selector
+```
+
+### Available Metrics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `certwatch_certificate_days_until_expiry` | Gauge | Days until certificate expires |
+| `certwatch_certificate_valid` | Gauge | Certificate validity (1=valid, 0=invalid) |
+| `certwatch_certificate_chain_valid` | Gauge | Chain validity (1=valid, 0=invalid) |
+| `certwatch_scan_total` | Counter | Total scans by status |
+| `certwatch_sync_total` | Counter | Total syncs by status |
+
+See the [Observability guide](/agent/observability) for complete metrics documentation and alerting examples.
+
+## Health Endpoints
+
+The agent exposes Kubernetes-compatible health endpoints:
+
+| Endpoint | Description |
+|----------|-------------|
+| `/healthz` | Basic liveness check |
+| `/readyz` | Readiness probe - 503 during init |
+| `/livez` | Deep liveness - 503 if no recent scans |
+
+The Helm chart automatically configures liveness and readiness probes using these endpoints.
+
+## Security
+
+The Helm chart includes secure defaults:
+
+- **Non-root user** - Runs as UID 65534
+- **Read-only filesystem** - Container filesystem is read-only
+- **Dropped capabilities** - All Linux capabilities dropped
+- **No privilege escalation** - Blocks privilege escalation
+
+```yaml
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+```
+
+## Monitoring Internal Services
+
+Monitor certificates on services within your Kubernetes cluster:
+
+```yaml
+certificates:
+  # Service in same namespace
+  - hostname: my-service
+    port: 443
+
+  # Service in different namespace
+  - hostname: api-gateway.ingress-nginx.svc.cluster.local
+    port: 443
+
+  # Ingress controller
+  - hostname: ingress-nginx-controller.ingress-nginx.svc.cluster.local
+    port: 443
+    tags:
+      - ingress
+      - infrastructure
+```
+
+## Upgrading
+
+```bash
+# Upgrade to latest version
+helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent
+
+# Upgrade to specific version
+helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent --version 0.4.1
+
+# Upgrade with values file
+helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent -f values.yaml
+```
+
+## Uninstalling
+
+```bash
+helm uninstall cw-agent
+
+# Optionally remove the API key secret
+kubectl delete secret cw-agent-api-key
+```
+
+## Troubleshooting
+
+### Verify Deployment
+
+```bash
+# Check pod status
+kubectl get pods -l app.kubernetes.io/name=cw-agent
+
+# View logs
+kubectl logs -l app.kubernetes.io/name=cw-agent -f
+
+# Check events
+kubectl describe pod -l app.kubernetes.io/name=cw-agent
+```
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Pod in CrashLoopBackOff | Check logs: `kubectl logs <pod-name>`. Usually API key or agent name issues. |
+| "agent.name is required" | Set `agent.name` in values or via `--set agent.name=...` |
+| "apiKey is required" | Configure `apiKey.value` or `apiKey.existingSecret.name` |
+| Cannot reach internal services | Ensure agent pod can resolve and reach the target hostnames |
+| Metrics not scraped | Verify ServiceMonitor labels match Prometheus selector |
+
+### Debug Mode
+
+Enable debug logging:
+
+```yaml
+agent:
+  logLevel: debug
+```
+
+Then view logs:
+
+```bash
+kubectl logs -l app.kubernetes.io/name=cw-agent -f
+```

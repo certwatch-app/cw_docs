@@ -52,6 +52,10 @@ flowchart TB
 - **State Persistence** - Agent ID survives restarts
 - **Secure** - Runs without root, uses TLS for all communication
 - **Lightweight** - Minimal CPU and memory footprint
+- **Prometheus Metrics** - Expose certificate and agent metrics at `/metrics`
+- **Health Endpoints** - Kubernetes-ready `/healthz`, `/readyz`, `/livez` endpoints
+- **Heartbeat Support** - Agent offline detection and alerting
+- **Helm Chart** - Official Helm chart for Kubernetes with GitOps support
 
 ## Quick Start
 
@@ -73,6 +77,11 @@ flowchart TB
   </Step>
 </Steps>
 
-<Card title="Full Installation Guide" icon="download" href="/agent/installation">
-  See all installation options including Docker, Homebrew, and manual download.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Full Installation Guide" icon="download" href="/agent/installation">
+    See all installation options including Docker, Homebrew, Helm, and manual download.
+  </Card>
+  <Card title="Kubernetes Deployment" icon="dharmachakra" href="/agent/kubernetes">
+    Deploy with our official Helm chart for Kubernetes clusters.
+  </Card>
+</CardGroup>

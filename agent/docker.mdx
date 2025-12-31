@@ -140,7 +140,7 @@ docker run -d ... # (same run command)
 | Tag | Description |
 |-----|-------------|
 | `latest` | Latest stable release |
-| `X.Y.Z` | Specific version (e.g., `0.2.1`) |
+| `X.Y.Z` | Specific version (e.g., `0.4.1`) |
 | `X.Y` | Latest patch of a minor version |
 
 ## Multi-Architecture Support
@@ -155,54 +155,24 @@ docker pull --platform linux/arm64 ghcr.io/certwatch-app/cw-agent:latest
 
 ## Kubernetes
 
-For Kubernetes deployments, use a ConfigMap for the configuration:
+For Kubernetes deployments, we recommend using our official Helm chart instead of raw manifests:
 
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: certwatch-agent-config
-data:
-  certwatch.yaml: |
-    api:
-      key: "${CW_API_KEY}"
-    agent:
-      name: "k8s-agent"
-    certificates:
-      - hostname: "internal-api.default.svc.cluster.local"
-        port: 443
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: certwatch-agent
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: certwatch-agent
-  template:
-    metadata:
-      labels:
-        app: certwatch-agent
-    spec:
-      containers:
-        - name: cw-agent
-          image: ghcr.io/certwatch-app/cw-agent:latest
-          volumeMounts:
-            - name: config
-              mountPath: /etc/certwatch
-          env:
-            - name: CW_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: certwatch-secrets
-                  key: api-key
-      volumes:
-        - name: config
-          configMap:
-            name: certwatch-agent-config
+```bash
+helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent \
+  --set agent.name=my-cluster \
+  --set apiKey.existingSecret.name=cw-agent-api-key \
+  --set certificates[0].hostname=api.example.com
 ```
+
+The Helm chart includes:
+- Secure defaults (non-root, read-only filesystem)
+- Prometheus ServiceMonitor support
+- Kubernetes health probes pre-configured
+- Support for ArgoCD and FluxCD
+
+<Card title="Kubernetes Deployment Guide" icon="dharmachakra" href="/agent/kubernetes">
+  See complete Helm chart configuration, GitOps examples, and more.
+</Card>
 
 ## Security Considerations
 

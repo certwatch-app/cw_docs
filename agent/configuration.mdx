@@ -56,6 +56,14 @@ agent:
   # Log level: debug, info, warn, error (default: info)
   log_level: info
 
+  # Port for Prometheus metrics and health endpoints (default: 8080)
+  # Set to 0 to disable the metrics server
+  metrics_port: 8080
+
+  # How often to send heartbeats for offline alerts (default: 30s)
+  # Set to 0 to disable heartbeats
+  heartbeat_interval: 30s
+
 certificates:
   # Web server
   - hostname: "www.example.com"
@@ -112,6 +120,12 @@ certificates:
 | `agent.scan_interval` | duration | `1m` | How often to scan certificates (min: 10s) |
 | `agent.concurrency` | int | `10` | Max concurrent scans (1-50) |
 | `agent.log_level` | string | `info` | Log level: debug, info, warn, error |
+| `agent.metrics_port` | int | `8080` | Port for Prometheus metrics and health endpoints (0 to disable) |
+| `agent.heartbeat_interval` | duration | `30s` | Heartbeat frequency for offline alerts (0 to disable) |
+
+<Tip>
+  See the [Observability guide](/agent/observability) for details on Prometheus metrics and health endpoints.
+</Tip>
 
 ### Certificate Settings
 
