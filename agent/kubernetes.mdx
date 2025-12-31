@@ -5,6 +5,10 @@ description: "Deploy CertWatch Agent with Helm"
 
 Deploy the CertWatch Agent to Kubernetes using our official Helm chart, distributed via OCI registry.
 
+<Card title="View on ArtifactHub" icon="cube" href="https://artifacthub.io/packages/helm/cw-agent/cw-agent">
+  Browse chart versions, view default values, and verify the package on ArtifactHub.
+</Card>
+
 ## Prerequisites
 
 - Kubernetes 1.19+
@@ -160,7 +164,7 @@ spec:
   source:
     repoURL: ghcr.io/certwatch-app/helm-charts
     chart: cw-agent
-    targetRevision: 0.4.1
+    targetRevision: 0.4.3
     helm:
       values: |
         agent:
@@ -197,7 +201,7 @@ spec:
   interval: 5m
   url: oci://ghcr.io/certwatch-app/helm-charts/cw-agent
   ref:
-    tag: 0.4.1
+    tag: 0.4.3
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -311,7 +315,7 @@ certificates:
 helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent
 
 # Upgrade to specific version
-helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent --version 0.4.1
+helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent --version 0.4.3
 
 # Upgrade with values file
 helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent -f values.yaml
