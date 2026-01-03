@@ -90,7 +90,8 @@
             "pages": [
               "agent/systemd",
               "agent/docker",
-              "agent/kubernetes"
+              "agent/kubernetes",
+              "agent/cert-manager"
             ]
           },
           {

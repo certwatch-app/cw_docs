@@ -196,6 +196,52 @@ cw-agent validate -c certwatch.yaml
 ✓ Configuration is valid!
 ```
 
+## cert-manager Agent Configuration
+
+The cert-manager agent uses a simplified configuration since it discovers certificates automatically from Kubernetes.
+
+<Card title="Full cert-manager Guide" icon="dharmachakra" href="/agent/cert-manager">
+  See the dedicated cert-manager integration guide for installation and deployment.
+</Card>
+
+### Example Configuration
+
+```yaml
+api:
+  endpoint: "https://api.certwatch.app"
+  key: "cw_xxxxxxxx..."
+  timeout: 30s
+
+agent:
+  name: "production-cluster"
+  cluster_name: "prod-k8s"  # Optional, defaults to agent.name
+  log_level: info
+  metrics_port: 9402
+  health_port: 9403
+  sync_interval: 30s
+  heartbeat_interval: 30s
+  watch_all_namespaces: true
+  # namespaces:          # Only if watch_all_namespaces: false
+  #   - production
+  #   - staging
+```
+
+### cert-manager Agent Settings
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `agent.name` | string | **required** | Unique identifier for this agent |
+| `agent.cluster_name` | string | agent.name | Display name in dashboard |
+| `agent.metrics_port` | int | `9402` | Prometheus metrics port |
+| `agent.health_port` | int | `9403` | Health check endpoint port |
+| `agent.sync_interval` | duration | `30s` | How often to sync with cloud |
+| `agent.watch_all_namespaces` | bool | `true` | Watch all namespaces |
+| `agent.namespaces` | []string | `[]` | Specific namespaces (if not watching all) |
+
+<Note>
+  The cert-manager agent doesn't require a `certificates` list - it automatically discovers all Certificate CRDs in the cluster.
+</Note>
+
 ## Getting an API Key
 
 <Steps>

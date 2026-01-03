@@ -3,11 +3,19 @@ title: "Kubernetes Deployment"
 description: "Deploy CertWatch Agent with Helm"
 ---
 
-Deploy the CertWatch Agent to Kubernetes using our official Helm chart, distributed via OCI registry.
+Deploy CertWatch agents to Kubernetes using our official Helm charts, distributed via OCI registry.
 
-<Card title="View on ArtifactHub" icon="cube" href="https://artifacthub.io/packages/helm/cw-agent/cw-agent">
-  Browse chart versions, view default values, and verify the package on ArtifactHub.
-</Card>
+<CardGroup cols={3}>
+  <Card title="cw-agent" icon="network-wired" href="https://artifacthub.io/packages/helm/cw-agent/cw-agent">
+    Network scanner for TLS endpoints
+  </Card>
+  <Card title="cw-agent-certmanager" icon="dharmachakra" href="https://artifacthub.io/packages/helm/cw-agent/cw-agent-certmanager">
+    cert-manager controller
+  </Card>
+  <Card title="cw-stack" icon="layer-group" href="https://artifacthub.io/packages/helm/cw-agent/cw-stack">
+    Umbrella chart for both agents
+  </Card>
+</CardGroup>
 
 ## Prerequisites
 
@@ -15,9 +23,13 @@ Deploy the CertWatch Agent to Kubernetes using our official Helm chart, distribu
 - Helm 3.8+
 - CertWatch account with API key
 
-## Quick Start
+## Network Agent (cw-agent)
 
-### Testing (Direct API Key)
+The network agent scans TLS certificates from endpoints you configure.
+
+### Quick Start
+
+#### Testing (Direct API Key)
 
 For quick testing, provide the API key directly:
 
@@ -33,7 +45,7 @@ helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent \
   When using `apiKey.value`, the key is stored in Helm release history. Use `apiKey.existingSecret` for production deployments.
 </Warning>
 
-### Production (Recommended)
+#### Production (Recommended)
 
 For production, create a Kubernetes Secret first:
 
@@ -50,9 +62,9 @@ helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent \
   --set certificates[0].port=443
 ```
 
-## Configuration
+### Configuration
 
-### Using a Values File
+#### Using a Values File
 
 Create a `values.yaml` for your deployment:
 
@@ -95,9 +107,9 @@ Install with your values file:
 helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent -f values.yaml
 ```
 
-### Configuration Reference
+#### Configuration Reference
 
-#### API Key Options
+**API Key Options**
 
 | Parameter | Description |
 |-----------|-------------|
@@ -105,7 +117,7 @@ helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent -f values
 | `apiKey.existingSecret.name` | Name of existing Secret with API key |
 | `apiKey.existingSecret.key` | Key in the Secret containing API key (default: `api-key`) |
 
-#### Agent Settings
+**Agent Settings**
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
@@ -117,7 +129,7 @@ helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent -f values
 | `agent.metricsPort` | `8080` | Prometheus metrics port (0 to disable) |
 | `agent.heartbeatInterval` | `30s` | Heartbeat interval for offline alerts |
 
-#### Certificate Configuration
+**Certificate Configuration**
 
 | Parameter | Description |
 |-----------|-------------|
@@ -127,7 +139,7 @@ helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent -f values
 | `certificates[].tags` | Tags for organization |
 | `certificates[].notes` | Notes about this certificate |
 
-#### Kubernetes Resources
+**Kubernetes Resources**
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
@@ -139,7 +151,7 @@ helm install cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent -f values
 | `resources.requests.cpu` | `10m` | CPU request |
 | `resources.requests.memory` | `32Mi` | Memory request |
 
-### External ConfigMap
+#### External ConfigMap
 
 For complex deployments, use an existing ConfigMap containing the full `certwatch.yaml`:
 
@@ -148,6 +160,122 @@ existingConfigMap:
   name: my-certwatch-config
   key: certwatch.yaml
 ```
+
+---
+
+## cert-manager Agent (cw-agent-certmanager)
+
+Monitor certificates managed by [cert-manager](https://cert-manager.io) automatically. No manual certificate configuration required.
+
+<Card title="Full cert-manager Guide" icon="dharmachakra" href="/agent/cert-manager">
+  See the dedicated cert-manager integration guide for detailed configuration.
+</Card>
+
+### Prerequisites
+
+- Kubernetes 1.19+
+- Helm 3.8+
+- **cert-manager** v1.0+ installed in cluster
+- CertWatch API key
+
+### Quick Start
+
+```bash
+# Create API key secret
+kubectl create secret generic cw-api-key \
+  --from-literal=api-key=cw_your_key_here
+
+# Install cert-manager agent
+helm install cw-certmanager oci://ghcr.io/certwatch-app/helm-charts/cw-agent-certmanager \
+  --set agent.name=my-cluster \
+  --set agent.clusterName="Production K8s" \
+  --set apiKey.existingSecret.name=cw-api-key
+```
+
+### Configuration Reference
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `agent.name` | `""` | **Required.** Unique agent name |
+| `agent.clusterName` | agent.name | Cluster display name in dashboard |
+| `agent.logLevel` | `info` | Log level |
+| `agent.metricsPort` | `9402` | Prometheus metrics port |
+| `agent.healthPort` | `9403` | Health check port |
+| `agent.syncInterval` | `30s` | Sync frequency to cloud |
+| `agent.watchAllNamespaces` | `true` | Watch all namespaces |
+| `agent.namespaces` | `[]` | Specific namespaces if not all |
+
+---
+
+## cw-stack Umbrella Chart
+
+Deploy **both** agents with a single Helm release using shared configuration.
+
+### When to Use cw-stack
+
+- You need both network scanning AND cert-manager monitoring
+- You want to share API key configuration across agents
+- You prefer managing a single Helm release
+
+### Installation
+
+```bash
+# Create shared API key secret
+kubectl create secret generic cw-api-key \
+  --from-literal=api-key=cw_your_key_here
+
+# Install with both agents enabled
+helm install certwatch oci://ghcr.io/certwatch-app/helm-charts/cw-stack \
+  --set global.apiKey.existingSecret.name=cw-api-key \
+  --set agent.enabled=true \
+  --set certManager.enabled=true \
+  --set cw-agent.agent.name=network-scanner \
+  --set cw-agent-certmanager.agent.name=certmanager-watcher
+```
+
+### Values Structure
+
+```yaml
+# Shared across all agents
+global:
+  api:
+    endpoint: "https://api.certwatch.app"
+  apiKey:
+    existingSecret:
+      name: cw-api-key
+
+# Enable/disable agents
+agent:
+  enabled: true
+certManager:
+  enabled: true
+
+# Individual agent configuration
+cw-agent:
+  agent:
+    name: network-scanner
+  certificates:
+    - hostname: api.example.com
+
+cw-agent-certmanager:
+  agent:
+    name: certmanager-watcher
+    clusterName: production
+```
+
+### Configuration Reference
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `global.api.endpoint` | `https://api.certwatch.app` | Shared API endpoint |
+| `global.apiKey.value` | `""` | Shared API key (testing only) |
+| `global.apiKey.existingSecret.name` | `""` | Shared secret name |
+| `agent.enabled` | `false` | Enable network scanner |
+| `certManager.enabled` | `false` | Enable cert-manager controller |
+| `cw-agent.*` | - | Network agent settings |
+| `cw-agent-certmanager.*` | - | cert-manager agent settings |
+
+---
 
 ## GitOps Integration
 
@@ -164,7 +292,7 @@ spec:
   source:
     repoURL: ghcr.io/certwatch-app/helm-charts
     chart: cw-agent
-    targetRevision: 0.4.3
+    targetRevision: 0.5.3
     helm:
       values: |
         agent:
@@ -201,7 +329,7 @@ spec:
   interval: 5m
   url: oci://ghcr.io/certwatch-app/helm-charts/cw-agent
   ref:
-    tag: 0.4.3
+    tag: 0.5.3
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -315,7 +443,7 @@ certificates:
 helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent
 
 # Upgrade to specific version
-helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent --version 0.4.3
+helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent --version 0.5.3
 
 # Upgrade with values file
 helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent -f values.yaml

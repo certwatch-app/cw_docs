@@ -22,26 +22,48 @@ The CertWatch Agent is a lightweight monitoring daemon that runs on your infrast
   </Card>
 </CardGroup>
 
+## Agent Types
+
+CertWatch offers two agent types for different use cases:
+
+<CardGroup cols={2}>
+  <Card title="Network Agent" icon="network-wired" href="/agent/kubernetes">
+    Scans TLS certificates from network endpoints. Ideal for monitoring internal APIs, databases, and services.
+  </Card>
+  <Card title="cert-manager Agent" icon="dharmachakra" href="/agent/cert-manager">
+    Monitors certificates managed by cert-manager in Kubernetes. Automatic discovery of all Certificate CRDs.
+  </Card>
+</CardGroup>
+
 ## How It Works
 
 ```mermaid
 flowchart TB
     subgraph infra["Your Infrastructure"]
         direction TB
-        subgraph services["Internal Services"]
+
+        subgraph k8s["Kubernetes Cluster"]
             direction LR
-            api["Internal API Server<br/>:8443"]
-            db["Database Server<br/>:5432"]
-            k8s["Kubernetes Ingress<br/>:443"]
+            cm["cert-manager"]
+            certs["Certificate CRDs"]
+            cmAgent["cw-agent-certmanager"]
+            cm --> certs
+            certs --> cmAgent
         end
-        agent["CertWatch Agent"]
-        api --> agent
-        db --> agent
-        k8s --> agent
+
+        subgraph services["Network Services"]
+            direction LR
+            api["Internal API<br/>:8443"]
+            db["Database<br/>:5432"]
+            netAgent["cw-agent"]
+            api --> netAgent
+            db --> netAgent
+        end
     end
 
-    agent -->|"HTTPS (outbound only)"| cloud["CertWatch Cloud API"]
-    cloud --> dashboard["Your Dashboard<br/>certwatch.app"]
+    cmAgent -->|"HTTPS"| cloud["CertWatch Cloud"]
+    netAgent -->|"HTTPS"| cloud
+    cloud --> dashboard["Dashboard<br/>certwatch.app"]
 ```
 
 ## Features
@@ -55,7 +77,9 @@ flowchart TB
 - **Prometheus Metrics** - Expose certificate and agent metrics at `/metrics`
 - **Health Endpoints** - Kubernetes-ready `/healthz`, `/readyz`, `/livez` endpoints
 - **Heartbeat Support** - Agent offline detection and alerting
-- **Helm Chart** - Official Helm chart for Kubernetes with GitOps support
+- **Helm Charts** - Official Helm charts for Kubernetes with GitOps support
+- **cert-manager Integration** - Auto-discover certificates from cert-manager CRDs
+- **Umbrella Chart** - Deploy both agents with `cw-stack` Helm chart
 
 ## Quick Start
 

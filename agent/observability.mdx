@@ -225,6 +225,69 @@ rate(certwatch_sync_total{status="success"}[5m]) / rate(certwatch_sync_total[5m]
 histogram_quantile(0.99, rate(certwatch_scan_duration_seconds_bucket[5m]))
 ```
 
+## cert-manager Agent Metrics
+
+The cert-manager agent exposes additional metrics specific to Kubernetes certificate monitoring.
+
+### Ports
+
+The cert-manager agent uses separate ports (different from the network agent):
+- **Metrics**: `9402` (configurable via `agent.metricsPort`)
+- **Health**: `9403` (configurable via `agent.healthPort`)
+
+### Certificate Metrics
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `certwatch_certificate_days_until_expiry` | Gauge | namespace, name | Days until certificate expires |
+| `certwatch_certificate_ready` | Gauge | namespace, name | Certificate ready status (1=ready) |
+| `certwatch_certificate_renewal_time_seconds` | Gauge | namespace, name | Next renewal time as Unix timestamp |
+
+### Reconciliation Metrics
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `certwatch_reconcile_total` | Counter | result | Total reconciliations by result |
+| `certwatch_reconcile_duration_seconds` | Histogram | | Time to reconcile certificates |
+
+### Prometheus ServiceMonitor for cert-manager Agent
+
+```yaml
+# values.yaml for cw-agent-certmanager
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  labels:
+    release: prometheus
+```
+
+### Alerting Examples for cert-manager
+
+```yaml
+groups:
+  - name: certwatch-certmanager
+    rules:
+      # Certificate not ready
+      - alert: CertManagerCertificateNotReady
+        expr: certwatch_certificate_ready == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "cert-manager certificate not ready"
+          description: "{{ $labels.namespace }}/{{ $labels.name }} is not ready"
+
+      # Reconciliation errors
+      - alert: CertManagerReconcileErrors
+        expr: rate(certwatch_reconcile_total{result="error"}[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "cert-manager agent reconciliation errors"
+          description: "Errors occurring during certificate reconciliation"
+```
+
 ## Disabling Observability
 
 To run without metrics and health endpoints:
