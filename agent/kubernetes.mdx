@@ -292,7 +292,7 @@ spec:
   source:
     repoURL: ghcr.io/certwatch-app/helm-charts
     chart: cw-agent
-    targetRevision: 0.5.3
+    targetRevision: 0.5.x  # Pin to 0.5.x for stability
     helm:
       values: |
         agent:
@@ -329,7 +329,7 @@ spec:
   interval: 5m
   url: oci://ghcr.io/certwatch-app/helm-charts/cw-agent
   ref:
-    tag: 0.5.3
+    semver: ">=0.5.0"  # Auto-update within 0.5.x
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -442,8 +442,8 @@ certificates:
 # Upgrade to latest version
 helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent
 
-# Upgrade to specific version
-helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent --version 0.5.3
+# Upgrade to specific version (e.g., 0.5.4)
+helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent --version 0.5.4
 
 # Upgrade with values file
 helm upgrade cw-agent oci://ghcr.io/certwatch-app/helm-charts/cw-agent -f values.yaml
